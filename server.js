@@ -283,6 +283,16 @@ app.get('/api/me', (req, res) => {
   });
 });
 
+// ─── Setup Reset (זמני — למחוק אחרי שימוש) ───────────────────────────────────
+app.get('/api/setup/reset', (req, res) => {
+  if (req.query.secret !== 'anastasia-reset-2026') return res.status(403).json({ error: 'Forbidden' });
+  ['users.json','userinfo.json','server-config.json','logo-custom.png'].forEach(f => {
+    const p = path.join(DATA, f);
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  });
+  res.json({ ok: true, message: 'Setup reset — רענן את הדף' });
+});
+
 // ─── Setup Wizard Routes ──────────────────────────────────────────────────────
 app.get('/setup', (req, res) => {
   if (isSetupComplete()) return res.redirect('/');
