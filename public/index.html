@@ -1587,6 +1587,10 @@ function ProjectsStrip({ projects=[], tasks=[], go }) {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 function Dashboard({ data, go, onNew, onEditTask, onUpdateTask, wa }) {
   const { orgs, contacts, tasks, shows=[], quotes: allQuotes=[] } = data;
+  const [meInfo, setMeInfo] = React.useState({ name: '', businessName: '' });
+  React.useEffect(() => {
+    fetch('/api/me').then(r=>r.json()).then(d=>setMeInfo(d)).catch(()=>{});
+  }, []);
   const todayStr = today();
   const allItems = [...orgs.map(o=>({...o,_k:'org'})), ...contacts.map(c=>({...c,_k:'contact'}))];
   const stats = {
@@ -1706,7 +1710,7 @@ function Dashboard({ data, go, onNew, onEditTask, onUpdateTask, wa }) {
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <div><h1 style={{fontSize:24,fontWeight:700}}>לוח בקרה</h1><p style={{color:'#64748b',fontSize:14,marginTop:2}}>ברוך הבא, ירון!</p></div>
+        <div><h1 style={{fontSize:24,fontWeight:700}}>לוח בקרה</h1><p style={{color:'#64748b',fontSize:14,marginTop:2}}>ברוכים הבאים{meInfo.name ? `, ${meInfo.name}` : ''}!</p></div>
         <button className="btn btn-primary" onClick={onNew}><I n="plus" s={15} c="#fff"/>הוסף חדש</button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:14,marginBottom:16}}>
@@ -4677,7 +4681,7 @@ function Settings({ auth, onSync, syncing }) {
         <div className="card" style={{padding:20}}>
           <h2 style={{fontSize:17,fontWeight:700,marginBottom:12}}>אודות ה-CRM</h2>
           <div style={{fontSize:14,color:'#475569',lineHeight:1.8}}>
-            <p>גרסה 2.0 · מותאם לירון אנטניר — שקוף בחזית</p>
+            <p>גרסה 2.0 · מערכת CRM</p>
             <p>הנתונים נשמרים בתיקיית <code>data/</code> בתור קבצי JSON.</p>
             <p>כדי לגבות, העתק את התיקייה <code>data/</code> למקום בטוח.</p>
           </div>

@@ -269,6 +269,20 @@ app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
+// ─── Current User Info ───────────────────────────────────────────────────────
+app.get('/api/me', (req, res) => {
+  const userinfo = rj('userinfo.json', {});
+  const users = loadUsers();
+  const sessionUser = req.session.userId ? users.find(u => u.id === req.session.userId) : null;
+  res.json({
+    name:         sessionUser?.name || userinfo.ownerName || '',
+    businessName: userinfo.businessName || '',
+    businessDesc: userinfo.businessDesc || '',
+    email:        sessionUser?.email || userinfo.email || '',
+    logoUrl:      userinfo.logoUrl || null,
+  });
+});
+
 // ─── Setup Wizard Routes ──────────────────────────────────────────────────────
 app.get('/setup', (req, res) => {
   if (isSetupComplete()) return res.redirect('/');
@@ -285,11 +299,21 @@ app.post('/api/setup/logo', (req, res) => {
   if (!logo || !logo.startsWith('data:image/')) return res.status(400).json({ error: 'Invalid logo' });
   try {
     const base64 = logo.replace(/^data:image\/\w+;base64,/, '');
-    fs.writeFileSync(path.join(PUB, 'logo-custom.png'), Buffer.from(base64, 'base64'));
+    const buf = Buffer.from(base64, 'base64');
+    // שמור ב-data/ (Volume — שורד restart) וגם ב-public/
+    fs.writeFileSync(path.join(DATA, 'logo-custom.png'), buf);
+    fs.writeFileSync(path.join(PUB, 'logo-custom.png'), buf);
     res.json({ ok: true, url: '/logo-custom.png' });
   } catch(e) {
     res.status(500).json({ error: 'שגיאה בשמירת הלוגו' });
   }
+});
+
+// הגש לוגו מותאם אם קיים — Volume גובר על קובץ ה-repo
+app.get('/logo.png', (req, res) => {
+  const custom = path.join(DATA, 'logo-custom.png');
+  if (fs.existsSync(custom)) return res.sendFile(custom);
+  res.sendFile(path.join(PUB, 'logo.png'));
 });
 
 app.post('/api/setup/init', async (req, res) => {
