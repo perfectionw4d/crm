@@ -32,7 +32,7 @@
       height: 100%;
       background: linear-gradient(90deg, #6366f1, #a78bfa);
       transition: width 0.4s ease;
-      width: 16.6%;
+      width: 14.3%;
     }
 
     /* ─── Header ─── */
@@ -162,6 +162,28 @@
       line-height: 1.5;
     }
     .info-box a { color: #1d4ed8; font-weight: 600; }
+    .info-box.green { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+    .info-box.green a { color: #15803d; }
+
+    /* ─── Download button ─── */
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      background: #1e1b4b;
+      color: white;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all 0.18s;
+      margin-bottom: 16px;
+    }
+    .btn-download:hover { background: #312e81; transform: translateY(-1px); }
 
     /* ─── Summary ─── */
     .summary-item {
@@ -249,7 +271,7 @@
   <!-- ══════════════ STEP 1 — ברוכים הבאים ══════════════ -->
   <div class="step" id="step1">
     <div class="card-header">
-      <div class="step-badge">שלב 1 מתוך 6</div>
+      <div class="step-badge">שלב 1 מתוך 7</div>
       <div class="step-icon">👋</div>
       <h1 class="step-title">ברוכים הבאים!</h1>
       <p class="step-desc">בואי נגדיר את ה-CRM שלך בכמה שלבים פשוטים.</p>
@@ -277,7 +299,7 @@
   <!-- ══════════════ STEP 2 — יצירת חשבון ══════════════ -->
   <div class="step hidden" id="step2">
     <div class="card-header">
-      <div class="step-badge">שלב 2 מתוך 6</div>
+      <div class="step-badge">שלב 2 מתוך 7</div>
       <div class="step-icon">🔐</div>
       <h1 class="step-title">יצירת חשבון</h1>
       <p class="step-desc">אלה פרטי הכניסה שלך למערכת. שמרי אותם במקום בטוח.</p>
@@ -306,7 +328,7 @@
   <!-- ══════════════ STEP 3 — לוגו ══════════════ -->
   <div class="step hidden" id="step3">
     <div class="card-header">
-      <div class="step-badge">שלב 3 מתוך 6</div>
+      <div class="step-badge">שלב 3 מתוך 7</div>
       <div class="step-icon">🎨</div>
       <h1 class="step-title">לוגו העסק</h1>
       <p class="step-desc">הלוגו יופיע בהצעות מחיר ובמסמכים שתשלחי ללקוחות.</p>
@@ -334,7 +356,7 @@
   <!-- ══════════════ STEP 4 — WhatsApp ══════════════ -->
   <div class="step hidden" id="step4">
     <div class="card-header">
-      <div class="step-badge">שלב 4 מתוך 6</div>
+      <div class="step-badge">שלב 4 מתוך 7</div>
       <div class="step-icon">💬</div>
       <h1 class="step-title">הודעות WhatsApp</h1>
       <p class="step-desc">האם תרצי לשלוח הודעות WhatsApp ללקוחות שלך?</p>
@@ -410,7 +432,7 @@
   <!-- ══════════════ STEP 5 — Email ══════════════ -->
   <div class="step hidden" id="step5">
     <div class="card-header">
-      <div class="step-badge">שלב 5 מתוך 6</div>
+      <div class="step-badge">שלב 5 מתוך 7</div>
       <div class="step-icon">📧</div>
       <h1 class="step-title">שליחת מיילים</h1>
       <p class="step-desc">שירות Resend מאפשר לשלוח הצעות מחיר ועדכונים במייל ללקוחות.</p>
@@ -447,10 +469,94 @@
     </div>
   </div>
 
-  <!-- ══════════════ STEP 6 — סיכום ══════════════ -->
+  <!-- ══════════════ STEP 6 — WordPress ══════════════ -->
   <div class="step hidden" id="step6">
     <div class="card-header">
-      <div class="step-badge">שלב 6 מתוך 6</div>
+      <div class="step-badge">שלב 6 מתוך 7</div>
+      <div class="step-icon">🌐</div>
+      <h1 class="step-title">אתר WordPress</h1>
+      <p class="step-desc">האם יש לך אתר WordPress? זה מאפשר ללקוחות לצפות ולחתום על מסמכים.</p>
+    </div>
+    <div class="card-body">
+
+      <div class="info-box" style="margin-bottom:16px;">
+        🤔 <strong>למה זה שימושי?</strong><br/>
+        כשתיצרי <strong>הצעת מחיר</strong> או <strong>הזמנת עבודה</strong>, המערכת יכולה לפרסם אותה באתר שלך כדף אינטרנט. הלקוח מקבל קישור, פותח את הדף, רואה את ההצעה — ויכול <strong>לחתום דיגיטלית</strong> ישירות.
+      </div>
+
+      <div class="radio-group">
+        <div class="radio-card" id="wpYes" onclick="selectWP(true)">
+          <div class="rc-icon">✅</div>
+          <div class="rc-label">כן, יש לי אתר</div>
+        </div>
+        <div class="radio-card selected" id="wpNo" onclick="selectWP(false)">
+          <div class="rc-icon">⏭️</div>
+          <div class="rc-label">לא עכשיו</div>
+        </div>
+      </div>
+
+      <div id="wpGuide" class="hidden">
+        <div class="info-box green" style="margin-bottom:14px;">
+          ✅ מצוין! צריך להתקין תוסף קטן באתר שלך שמחבר אותו ל-CRM.
+        </div>
+        <div class="guide-box">
+          <div class="guide-step">
+            <div class="guide-num">1</div>
+            <div class="guide-text">
+              הורידי את תוסף ה-CRM בלחיצה על הכפתור למטה.
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">2</div>
+            <div class="guide-text">
+              בלוח הבקרה של WordPress: <strong>תוספים → הוסף תוסף חדש → העלה תוסף</strong><br/>
+              בחרי את הקובץ שהורדת והפעילי אותו.
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">3</div>
+            <div class="guide-text">
+              לאחר ההתקנה: <strong>הגדרות → CRM Integration</strong><br/>
+              הזיני שם <strong>API Key</strong> — כלשהו שתבחרי (למשל: 12345 או מילה שאת בוחרת).
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">4</div>
+            <div class="guide-text">
+              הכניסי את אותו ה-API Key ואת כתובת האתר בשדות למטה:
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <button class="btn-download" onclick="downloadPlugin()">
+            ⬇️ הורדת תוסף WordPress
+          </button>
+        </div>
+
+        <div class="field">
+          <label>כתובת האתר שלך <span class="req">*</span></label>
+          <input type="url" id="wpUrl" placeholder="https://www.my-site.co.il" dir="ltr" />
+        </div>
+        <div class="field">
+          <label>API Key <span class="req">*</span></label>
+          <input type="text" id="wpApiKey" placeholder="המפתח שהגדרת בתוסף" dir="ltr" />
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">כל סיסמה שתבחרי — תהיה זהה כאן ובתוסף</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+      <div id="error6" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 7 — סיכום ══════════════ -->
+  <div class="step hidden" id="step7">
+    <div class="card-header">
+      <div class="step-badge">שלב 7 מתוך 7</div>
       <div class="step-icon">🎉</div>
       <h1 class="step-title">הכל מוכן!</h1>
       <p class="step-desc">המערכת שלך מוגדרת ומוכנה לשימוש.</p>
@@ -465,7 +571,7 @@
           קדימה ל-CRM שלי! 🚀
         </button>
       </div>
-      <div id="error6" class="error-msg hidden"></div>
+      <div id="error7" class="error-msg hidden"></div>
     </div>
   </div>
 
@@ -481,10 +587,12 @@ const S = {
   waPhoneNumberId: '', waBusinessAccountId: '', waAccessToken: '', waNotifyPhone: '',
   useEmail: false,
   resendApiKey: '', resendFrom: '',
+  useWP: false,
+  wpUrl: '', wpApiKey: '',
 };
 
 let cur = 1;
-const TOTAL = 6;
+const TOTAL = 7;
 const LS_KEY = 'crm_setup_state';
 
 // ── Save / Load from localStorage ─────────────────────────
@@ -504,6 +612,7 @@ function loadProgress() {
       waPhoneNumberId: S.waPhoneNumberId, waBusinessAccountId: S.waBusinessAccountId,
       waAccessToken: S.waAccessToken, waNotifyPhone: S.waNotifyPhone,
       resendApiKey: S.resendApiKey, resendFrom: S.resendFrom,
+      wpUrl: S.wpUrl, wpApiKey: S.wpApiKey,
     };
     for (const [id, val] of Object.entries(fields)) {
       const el = document.getElementById(id);
@@ -511,6 +620,7 @@ function loadProgress() {
     }
     if (S.useWA) selectWA(true);
     if (S.useEmail) selectEmail(true);
+    if (S.useWP) selectWP(true);
     if (S.logo) {
       document.getElementById('logoPreview').src = S.logo;
       document.getElementById('logoPreview').classList.remove('hidden');
@@ -561,6 +671,12 @@ function validate(n) {
     if (!pw || pw.length < 8) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
     if (pw !== p2) return 'הסיסמאות אינן תואמות';
   }
+  if (n === 6 && S.useWP) {
+    if (!v('wpUrl')) return 'נא להזין את כתובת האתר';
+    if (!v('wpApiKey')) return 'נא להזין את ה-API Key שהגדרת בתוסף';
+    const url = v('wpUrl');
+    if (!/^https?:\/\/.+/.test(url)) return 'כתובת האתר חייבת להתחיל ב-https:// או http://';
+  }
   return null;
 }
 
@@ -586,6 +702,10 @@ function collect(n) {
   if (n === 5 && S.useEmail) {
     S.resendApiKey = v('resendApiKey');
     S.resendFrom   = v('resendFrom');
+  }
+  if (n === 6 && S.useWP) {
+    S.wpUrl    = v('wpUrl');
+    S.wpApiKey = v('wpApiKey');
   }
 }
 
@@ -622,6 +742,19 @@ function selectEmail(yes) {
   document.getElementById('emailFields').classList.toggle('hidden', !yes);
 }
 
+// ── WordPress toggle ───────────────────────────────────────
+function selectWP(yes) {
+  S.useWP = yes;
+  document.getElementById('wpYes').classList.toggle('selected', yes);
+  document.getElementById('wpNo').classList.toggle('selected', !yes);
+  document.getElementById('wpGuide').classList.toggle('hidden', !yes);
+}
+
+// ── Plugin Download ────────────────────────────────────────
+function downloadPlugin() {
+  window.open('/api/setup/wp-plugin', '_blank');
+}
+
 // ── Summary ────────────────────────────────────────────────
 function buildSummary() {
   const rows = [
@@ -630,6 +763,7 @@ function buildSummary() {
     { icon: '🎨', text: 'לוגו', ok: !!S.logo },
     { icon: '💬', text: 'WhatsApp', ok: S.useWA && !!S.waAccessToken },
     { icon: '📧', text: 'שליחת מיילים (Resend)', ok: S.useEmail && !!S.resendApiKey },
+    { icon: '🌐', text: S.useWP && S.wpUrl ? `WordPress: ${S.wpUrl}` : 'WordPress', ok: S.useWP && !!S.wpUrl },
     { icon: '📌', text: 'Google Calendar — לחיבור אחרי ההגדרה', ok: null },
   ];
   document.getElementById('summaryList').innerHTML = rows.map(r => `
@@ -680,6 +814,9 @@ async function finishSetup() {
     if (S.useEmail && S.resendApiKey) {
       payload.resend = { apiKey: S.resendApiKey, fromEmail: S.resendFrom };
     }
+    if (S.useWP && S.wpUrl && S.wpApiKey) {
+      payload.wp = { url: S.wpUrl, apiKey: S.wpApiKey };
+    }
 
     try { localStorage.removeItem(LS_KEY); } catch(e) {}
     const resp = await fetch('/api/setup/init', {
@@ -692,7 +829,7 @@ async function finishSetup() {
 
     window.location.href = '/';
   } catch (e) {
-    showErr(6, e.message);
+    showErr(7, e.message);
     btn.disabled = false;
     btn.innerHTML = 'קדימה ל-CRM שלי! 🚀';
   }

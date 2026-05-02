@@ -299,6 +299,15 @@ app.get('/setup', (req, res) => {
   res.sendFile(path.join(PUB, 'setup.html'));
 });
 
+// Serve WordPress plugin as download
+app.get('/api/setup/wp-plugin', (req, res) => {
+  const pluginFile = path.join(PUB, 'shb-crm-plugin.php');
+  if (!fs.existsSync(pluginFile)) return res.status(404).json({ error: 'Plugin file not found' });
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', 'attachment; filename="shb-crm-plugin.php"');
+  res.sendFile(pluginFile);
+});
+
 app.get('/api/setup/status', (req, res) => {
   res.json({ needsSetup: !isSetupComplete() });
 });
@@ -367,6 +376,10 @@ app.post('/api/setup/init', async (req, res) => {
   if (resend?.apiKey) {
     cfg.resendApiKey = resend.apiKey;
     if (resend.fromEmail) cfg.resendFrom = resend.fromEmail;
+  }
+  if (req.body.wp?.url) {
+    cfg.wpUrl    = req.body.wp.url.replace(/\/$/, '');
+    cfg.wpApiKey = req.body.wp.apiKey || '';
   }
   saveServerConfig(cfg);
 
