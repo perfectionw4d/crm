@@ -485,6 +485,41 @@ const S = {
 
 let cur = 1;
 const TOTAL = 6;
+const LS_KEY = 'crm_setup_state';
+
+// ── Save / Load from localStorage ─────────────────────────
+function saveProgress() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ step: cur, S })); } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if (!saved) return;
+    Object.assign(S, saved.S || {});
+    // שחזר שדות טקסט
+    const fields = {
+      ownerName: S.ownerName, businessName: S.businessName, businessDesc: S.businessDesc,
+      email: S.email,
+      waPhoneNumberId: S.waPhoneNumberId, waBusinessAccountId: S.waBusinessAccountId,
+      waAccessToken: S.waAccessToken, waNotifyPhone: S.waNotifyPhone,
+      resendApiKey: S.resendApiKey, resendFrom: S.resendFrom,
+    };
+    for (const [id, val] of Object.entries(fields)) {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    }
+    if (S.useWA) selectWA(true);
+    if (S.useEmail) selectEmail(true);
+    if (S.logo) {
+      document.getElementById('logoPreview').src = S.logo;
+      document.getElementById('logoPreview').classList.remove('hidden');
+      document.getElementById('logoPlaceholder').classList.add('hidden');
+      document.getElementById('logoUploadArea').classList.add('has-logo');
+    }
+    if (saved.step > 1) moveTo(saved.step);
+  } catch(e) {}
+}
 
 // ── Navigation ─────────────────────────────────────────────
 function nextStep() {
@@ -492,11 +527,14 @@ function nextStep() {
   if (err) { showErr(cur, err); return; }
   clearErr(cur);
   collect(cur);
+  saveProgress();
   moveTo(cur + 1);
 }
 
 function prevStep() {
   clearErr(cur);
+  collect(cur);
+  saveProgress();
   moveTo(cur - 1);
 }
 
@@ -643,6 +681,7 @@ async function finishSetup() {
       payload.resend = { apiKey: S.resendApiKey, fromEmail: S.resendFrom };
     }
 
+    try { localStorage.removeItem(LS_KEY); } catch(e) {}
     const resp = await fetch('/api/setup/init', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -658,6 +697,9 @@ async function finishSetup() {
     btn.innerHTML = 'קדימה ל-CRM שלי! 🚀';
   }
 }
+
+// ── Init ───────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', loadProgress);
 
 // ── Error helpers ──────────────────────────────────────────
 function showErr(n, msg) {
