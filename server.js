@@ -286,7 +286,7 @@ app.get('/api/me', (req, res) => {
 // ─── Setup Reset (זמני — למחוק אחרי שימוש) ───────────────────────────────────
 app.get('/api/setup/reset', (req, res) => {
   if (req.query.secret !== 'anastasia-reset-2026') return res.status(403).json({ error: 'Forbidden' });
-  ['users.json','userinfo.json','server-config.json','logo-custom.png'].forEach(f => {
+  ['users.json','userinfo.json','server-config.json','logo-custom.png','signatures.json'].forEach(f => {
     const p = path.join(DATA, f);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   });
@@ -668,9 +668,12 @@ function init() {
   }
   // ── חתימות ──
   if (rj('signatures.json').length === 0) {
+    const ui = rj('userinfo.json', {});
+    const ownerName = ui.ownerName || '';
+    const phone     = ui.phone     || '';
     wj('signatures.json', [
-      { id:'sig1', name:'חתימה ראשית', text:'ירון אנטניר\nמספר סיפורים מהבמה ומהלב ❤️\n\nלפעמים כל מה שצריך זה סיפור אחד טוב ✨', isDefault:true,  channel:'both', createdAt:today() },
-      { id:'sig2', name:'חתימה רשמית',  text:'ירון (טוני) אנטניר\nת.ז. 058342064\nטלפון: 0525105100',                                      isDefault:false, channel:'both', createdAt:today() },
+      { id:'sig1', name:'חתימה ראשית', text:`${ownerName}\nבברכה ❤️`, isDefault:true,  channel:'both', createdAt:today() },
+      { id:'sig2', name:'חתימה רשמית', text:`${ownerName}${phone ? '\nטלפון: '+phone : ''}`, isDefault:false, channel:'both', createdAt:today() },
       { id:'sig3', name:'חתימה קצרה',   text:'ירון אנטניר\n052-5105100',                                                                     isDefault:false, channel:'both', createdAt:today() },
     ]);
   }
