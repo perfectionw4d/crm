@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הגדרה ראשונית — CRM</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 32px 64px rgba(99, 102, 241, 0.3);
+      overflow: hidden;
+    }
+
+    /* ─── Progress ─── */
+    .progress-bar { height: 5px; background: #e0e7ff; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #a78bfa);
+      transition: width 0.4s ease;
+      width: 16.6%;
+    }
+
+    /* ─── Header ─── */
+    .card-header { padding: 32px 32px 0; text-align: center; }
+    .step-badge {
+      display: inline-block;
+      background: #ede9fe;
+      color: #6366f1;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .step-icon { font-size: 52px; margin-bottom: 10px; }
+    .step-title { font-size: 22px; font-weight: 700; color: #1e1b4b; margin-bottom: 6px; }
+    .step-desc { color: #6b7280; font-size: 14px; line-height: 1.6; }
+
+    /* ─── Body ─── */
+    .card-body { padding: 24px 32px 32px; }
+
+    /* ─── Fields ─── */
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+    label .req { color: #ef4444; margin-right: 2px; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      direction: rtl;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      color: #1f2937;
+    }
+    input[dir="ltr"] { direction: ltr; text-align: left; }
+    input:focus, textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+    input.err { border-color: #ef4444; }
+    textarea { resize: vertical; min-height: 76px; }
+
+    /* ─── Radio Cards ─── */
+    .radio-group { display: flex; gap: 10px; margin-bottom: 18px; }
+    .radio-card {
+      flex: 1;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      user-select: none;
+    }
+    .radio-card:hover { border-color: #a5b4fc; background: #f5f3ff; }
+    .radio-card.selected { border-color: #6366f1; background: #ede9fe; }
+    .radio-card .rc-icon { font-size: 26px; margin-bottom: 5px; }
+    .radio-card .rc-label { font-size: 13px; font-weight: 600; color: #374151; }
+
+    /* ─── Logo Upload ─── */
+    .logo-upload {
+      border: 2px dashed #d1d5db;
+      border-radius: 14px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+    .logo-upload:hover { border-color: #6366f1; background: #f5f3ff; }
+    .logo-upload.has-logo { border-style: solid; border-color: #6366f1; background: #f5f3ff; }
+    .logo-preview { max-height: 80px; max-width: 200px; margin: 0 auto 8px; display: block; border-radius: 8px; }
+    .logo-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    /* ─── Guide steps ─── */
+    .guide-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .guide-step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .guide-step:last-child { border-bottom: none; padding-bottom: 0; }
+    .guide-num {
+      width: 22px; height: 22px; min-width: 22px;
+      background: #6366f1; color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .guide-text { font-size: 13px; color: #374151; line-height: 1.55; }
+    .guide-text a { color: #6366f1; text-decoration: none; }
+    .guide-text a:hover { text-decoration: underline; }
+    .guide-text strong { color: #1e1b4b; }
+
+    /* ─── Info/Warning boxes ─── */
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 13px;
+      color: #1d4ed8;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .info-box a { color: #1d4ed8; font-weight: 600; }
+
+    /* ─── Summary ─── */
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+    .summary-text { font-size: 14px; color: #374151; flex: 1; }
+    .status-ok { color: #10b981; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .status-skip { color: #d1d5db; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+    /* ─── Buttons ─── */
+    .btn-row { display: flex; gap: 10px; margin-top: 22px; }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { background: #f3f4f6; color: #6b7280; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-text {
+      background: transparent;
+      color: #9ca3af;
+      font-size: 13px;
+      flex: none;
+      padding: 12px 8px;
+    }
+    .btn-text:hover { color: #6b7280; }
+
+    /* ─── Error ─── */
+    .error-msg {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* ─── Spinner ─── */
+    .spinner {
+      display: inline-block;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Helpers ─── */
+    .hidden { display: none !important; }
+    .mt8 { margin-top: 8px; }
+    .center { text-align: center; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- ══════════════ STEP 1 — ברוכים הבאים ══════════════ -->
+  <div class="step" id="step1">
+    <div class="card-header">
+      <div class="step-badge">שלב 1 מתוך 6</div>
+      <div class="step-icon">👋</div>
+      <h1 class="step-title">ברוכים הבאים!</h1>
+      <p class="step-desc">בואי נגדיר את ה-CRM שלך בכמה שלבים פשוטים.</p>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>שם מלא <span class="req">*</span></label>
+        <input type="text" id="ownerName" placeholder="השם שלך" />
+      </div>
+      <div class="field">
+        <label>שם העסק <span class="req">*</span></label>
+        <input type="text" id="businessName" placeholder="שם העסק שלך" />
+      </div>
+      <div class="field">
+        <label>תיאור קצר של הפעילות</label>
+        <textarea id="businessDesc" placeholder="למשל: הרצאות, סדנאות, קורסים..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+      <div id="error1" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 2 — יצירת חשבון ══════════════ -->
+  <div class="step hidden" id="step2">
+    <div class="card-header">
+      <div class="step-badge">שלב 2 מתוך 6</div>
+      <div class="step-icon">🔐</div>
+      <h1 class="step-title">יצירת חשבון</h1>
+      <p class="step-desc">אלה פרטי הכניסה שלך למערכת. שמרי אותם במקום בטוח.</p>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>כתובת אימייל <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="your@email.com" dir="ltr" />
+      </div>
+      <div class="field">
+        <label>סיסמה <span class="req">*</span></label>
+        <input type="password" id="password" placeholder="לפחות 8 תווים" />
+      </div>
+      <div class="field">
+        <label>אימות סיסמה <span class="req">*</span></label>
+        <input type="password" id="password2" placeholder="הקלידי שוב" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+      <div id="error2" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 3 — לוגו ══════════════ -->
+  <div class="step hidden" id="step3">
+    <div class="card-header">
+      <div class="step-badge">שלב 3 מתוך 6</div>
+      <div class="step-icon">🎨</div>
+      <h1 class="step-title">לוגו העסק</h1>
+      <p class="step-desc">הלוגו יופיע בהצעות מחיר ובמסמכים שתשלחי ללקוחות.</p>
+    </div>
+    <div class="card-body">
+      <div class="logo-upload" id="logoUploadArea" onclick="document.getElementById('logoFile').click()">
+        <img id="logoPreview" class="logo-preview hidden" src="" alt="לוגו" />
+        <div id="logoPlaceholder">
+          <div style="font-size:36px;margin-bottom:8px">🖼️</div>
+          <div style="font-size:14px;color:#6b7280;font-weight:600">לחצי לבחירת תמונה</div>
+          <div class="logo-hint">PNG או JPG, עד 5MB</div>
+        </div>
+      </div>
+      <input type="file" id="logoFile" accept="image/*" class="hidden" onchange="handleLogoUpload(this)" />
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+      <div class="center mt8">
+        <button class="btn btn-text" onclick="nextStep()">דלגי על שלב זה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 4 — WhatsApp ══════════════ -->
+  <div class="step hidden" id="step4">
+    <div class="card-header">
+      <div class="step-badge">שלב 4 מתוך 6</div>
+      <div class="step-icon">💬</div>
+      <h1 class="step-title">הודעות WhatsApp</h1>
+      <p class="step-desc">האם תרצי לשלוח הודעות WhatsApp ללקוחות שלך?</p>
+    </div>
+    <div class="card-body">
+      <div class="radio-group">
+        <div class="radio-card" id="waYes" onclick="selectWA(true)">
+          <div class="rc-icon">✅</div>
+          <div class="rc-label">כן, אני רוצה</div>
+        </div>
+        <div class="radio-card selected" id="waNo" onclick="selectWA(false)">
+          <div class="rc-icon">⏭️</div>
+          <div class="rc-label">לא עכשיו</div>
+        </div>
+      </div>
+
+      <div id="waGuide" class="hidden">
+        <div class="info-box">
+          💡 נדרש חשבון WhatsApp Business API דרך Meta. מדריך פשוט:
+        </div>
+        <div class="guide-box">
+          <div class="guide-step">
+            <div class="guide-num">1</div>
+            <div class="guide-text">
+              לכי לאתר <a href="https://business.facebook.com" target="_blank">business.facebook.com</a> וצרי חשבון עסקי חינמי.
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">2</div>
+            <div class="guide-text">
+              בתפריט: <strong>WhatsApp → חשבונות → הוסף מספר</strong>.<br/>
+              השתמשי במספר ישראלי שאינו מחובר כרגע ל-WhatsApp.
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">3</div>
+            <div class="guide-text">
+              אחרי אישור המספר, לכי ל-<strong>WhatsApp → API Setup</strong>.<br/>
+              העתיקי את <strong>Phone Number ID</strong> ואת <strong>Access Token</strong>.
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">4</div>
+            <div class="guide-text">הדביקי את הפרטים בשדות למטה:</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Phone Number ID</label>
+          <input type="text" id="waPhoneNumberId" placeholder="1234567890123456" dir="ltr" />
+        </div>
+        <div class="field">
+          <label>Business Account ID</label>
+          <input type="text" id="waBusinessAccountId" placeholder="9876543210" dir="ltr" />
+        </div>
+        <div class="field">
+          <label>Access Token</label>
+          <input type="text" id="waAccessToken" placeholder="EAAxxxxxxxxxxxxxxx..." dir="ltr" />
+        </div>
+        <div class="field">
+          <label>מספר WhatsApp שלך (לקבלת התראות)</label>
+          <input type="text" id="waNotifyPhone" placeholder="972521234567" dir="ltr" />
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">ספרות בלבד, עם 972 בהתחלה (ללא 0)</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 5 — Email ══════════════ -->
+  <div class="step hidden" id="step5">
+    <div class="card-header">
+      <div class="step-badge">שלב 5 מתוך 6</div>
+      <div class="step-icon">📧</div>
+      <h1 class="step-title">שליחת מיילים</h1>
+      <p class="step-desc">שירות Resend מאפשר לשלוח הצעות מחיר ועדכונים במייל ללקוחות.</p>
+    </div>
+    <div class="card-body">
+      <div class="info-box">
+        💡 <a href="https://resend.com" target="_blank">Resend.com</a> הוא שירות חינמי ל-100 מיילים ביום.
+        צרי חשבון חינמי ואז קבלי API Key.
+      </div>
+      <div class="radio-group">
+        <div class="radio-card" id="emailYes" onclick="selectEmail(true)">
+          <div class="rc-icon">✅</div>
+          <div class="rc-label">יש לי API Key</div>
+        </div>
+        <div class="radio-card selected" id="emailNo" onclick="selectEmail(false)">
+          <div class="rc-icon">⏭️</div>
+          <div class="rc-label">לא עכשיו</div>
+        </div>
+      </div>
+      <div id="emailFields" class="hidden">
+        <div class="field">
+          <label>Resend API Key</label>
+          <input type="text" id="resendApiKey" placeholder="re_xxxxxxxxxxxxxxxxxxxx" dir="ltr" />
+        </div>
+        <div class="field">
+          <label>כתובת "מאת" (אימייל שלך)</label>
+          <input type="email" id="resendFrom" placeholder="you@yourdomain.com" dir="ltr" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
+        <button class="btn btn-primary" onclick="nextStep()">המשך ←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 6 — סיכום ══════════════ -->
+  <div class="step hidden" id="step6">
+    <div class="card-header">
+      <div class="step-badge">שלב 6 מתוך 6</div>
+      <div class="step-icon">🎉</div>
+      <h1 class="step-title">הכל מוכן!</h1>
+      <p class="step-desc">המערכת שלך מוגדרת ומוכנה לשימוש.</p>
+    </div>
+    <div class="card-body">
+      <div id="summaryList"></div>
+      <div class="info-box" style="margin-top:14px">
+        📌 <strong>Google Calendar ואנשי קשר</strong> — ניתן לחבר לאחר הכניסה, דרך לחצן "הגדרות → חיבור Google".
+      </div>
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-primary" id="finishBtn" onclick="finishSetup()">
+          קדימה ל-CRM שלי! 🚀
+        </button>
+      </div>
+      <div id="error6" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ── State ──────────────────────────────────────────────────
+const S = {
+  ownerName: '', businessName: '', businessDesc: '',
+  email: '', password: '',
+  logo: null,
+  useWA: false,
+  waPhoneNumberId: '', waBusinessAccountId: '', waAccessToken: '', waNotifyPhone: '',
+  useEmail: false,
+  resendApiKey: '', resendFrom: '',
+};
+
+let cur = 1;
+const TOTAL = 6;
+
+// ── Navigation ─────────────────────────────────────────────
+function nextStep() {
+  const err = validate(cur);
+  if (err) { showErr(cur, err); return; }
+  clearErr(cur);
+  collect(cur);
+  moveTo(cur + 1);
+}
+
+function prevStep() {
+  clearErr(cur);
+  moveTo(cur - 1);
+}
+
+function moveTo(n) {
+  document.getElementById('step' + cur).classList.add('hidden');
+  document.getElementById('step' + n).classList.remove('hidden');
+  cur = n;
+  document.getElementById('progressFill').style.width = (cur / TOTAL * 100) + '%';
+  if (cur === TOTAL) buildSummary();
+  window.scrollTo(0, 0);
+}
+
+// ── Validation ─────────────────────────────────────────────
+function validate(n) {
+  if (n === 1) {
+    if (!v('ownerName')) return 'נא להזין שם מלא';
+    if (!v('businessName')) return 'נא להזין שם עסק';
+  }
+  if (n === 2) {
+    const em = document.getElementById('email').value.trim();
+    const pw = document.getElementById('password').value;
+    const p2 = document.getElementById('password2').value;
+    if (!em || !/\S+@\S+\.\S+/.test(em)) return 'נא להזין כתובת אימייל תקינה';
+    if (!pw || pw.length < 8) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
+    if (pw !== p2) return 'הסיסמאות אינן תואמות';
+  }
+  return null;
+}
+
+function v(id) { return document.getElementById(id).value.trim(); }
+
+// ── Collect ────────────────────────────────────────────────
+function collect(n) {
+  if (n === 1) {
+    S.ownerName    = v('ownerName');
+    S.businessName = v('businessName');
+    S.businessDesc = v('businessDesc');
+  }
+  if (n === 2) {
+    S.email    = v('email');
+    S.password = document.getElementById('password').value;
+  }
+  if (n === 4 && S.useWA) {
+    S.waPhoneNumberId     = v('waPhoneNumberId');
+    S.waBusinessAccountId = v('waBusinessAccountId');
+    S.waAccessToken       = v('waAccessToken');
+    S.waNotifyPhone       = v('waNotifyPhone');
+  }
+  if (n === 5 && S.useEmail) {
+    S.resendApiKey = v('resendApiKey');
+    S.resendFrom   = v('resendFrom');
+  }
+}
+
+// ── Logo ───────────────────────────────────────────────────
+function handleLogoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('הקובץ גדול מדי — מקסימום 5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.logo = e.target.result;
+    const prev = document.getElementById('logoPreview');
+    prev.src = S.logo;
+    prev.classList.remove('hidden');
+    document.getElementById('logoPlaceholder').classList.add('hidden');
+    document.getElementById('logoUploadArea').classList.add('has-logo');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── WhatsApp toggle ────────────────────────────────────────
+function selectWA(yes) {
+  S.useWA = yes;
+  document.getElementById('waYes').classList.toggle('selected', yes);
+  document.getElementById('waNo').classList.toggle('selected', !yes);
+  document.getElementById('waGuide').classList.toggle('hidden', !yes);
+}
+
+// ── Email toggle ───────────────────────────────────────────
+function selectEmail(yes) {
+  S.useEmail = yes;
+  document.getElementById('emailYes').classList.toggle('selected', yes);
+  document.getElementById('emailNo').classList.toggle('selected', !yes);
+  document.getElementById('emailFields').classList.toggle('hidden', !yes);
+}
+
+// ── Summary ────────────────────────────────────────────────
+function buildSummary() {
+  const rows = [
+    { icon: '👤', text: `${S.ownerName} — ${S.businessName}`, ok: true },
+    { icon: '🔐', text: `חשבון: ${S.email}`, ok: true },
+    { icon: '🎨', text: 'לוגו', ok: !!S.logo },
+    { icon: '💬', text: 'WhatsApp', ok: S.useWA && !!S.waAccessToken },
+    { icon: '📧', text: 'שליחת מיילים (Resend)', ok: S.useEmail && !!S.resendApiKey },
+    { icon: '📌', text: 'Google Calendar — לחיבור אחרי ההגדרה', ok: null },
+  ];
+  document.getElementById('summaryList').innerHTML = rows.map(r => `
+    <div class="summary-item">
+      <span class="summary-icon">${r.icon}</span>
+      <span class="summary-text">${r.text}</span>
+      ${r.ok === null
+        ? ''
+        : r.ok
+          ? '<span class="status-ok">✓ מוגדר</span>'
+          : '<span class="status-skip">דולג</span>'}
+    </div>
+  `).join('');
+}
+
+// ── Finish ─────────────────────────────────────────────────
+async function finishSetup() {
+  const btn = document.getElementById('finishBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>שומר...';
+
+  try {
+    // 1. Upload logo
+    if (S.logo) {
+      await fetch('/api/setup/logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logo: S.logo }),
+      });
+    }
+
+    // 2. Save all setup data
+    const payload = {
+      ownerName: S.ownerName,
+      businessName: S.businessName,
+      businessDesc: S.businessDesc,
+      email: S.email,
+      password: S.password,
+    };
+    if (S.useWA && S.waAccessToken) {
+      payload.wa = {
+        phoneNumberId:     S.waPhoneNumberId,
+        businessAccountId: S.waBusinessAccountId,
+        accessToken:       S.waAccessToken,
+        notifyPhone:       S.waNotifyPhone,
+      };
+    }
+    if (S.useEmail && S.resendApiKey) {
+      payload.resend = { apiKey: S.resendApiKey, fromEmail: S.resendFrom };
+    }
+
+    const resp = await fetch('/api/setup/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'שגיאה בשמירה');
+
+    window.location.href = '/';
+  } catch (e) {
+    showErr(6, e.message);
+    btn.disabled = false;
+    btn.innerHTML = 'קדימה ל-CRM שלי! 🚀';
+  }
+}
+
+// ── Error helpers ──────────────────────────────────────────
+function showErr(n, msg) {
+  const el = document.getElementById('error' + n);
+  if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+}
+function clearErr(n) {
+  const el = document.getElementById('error' + n);
+  if (el) el.classList.add('hidden');
+}
+</script>
+</body>
+</html>

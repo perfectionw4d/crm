@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>אישור הגעה — שקוף בחזית</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .card {
+      background: white; border-radius: 20px;
+      padding: 36px 32px; width: 100%; max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo { text-align: center; font-size: 48px; margin-bottom: 8px; }
+    .brand { text-align: center; font-size: 15px; color: #94a3b8; margin-bottom: 24px; }
+    .show-name { font-size: 22px; font-weight: 800; color: #1e293b; text-align: center; margin-bottom: 16px; }
+    .details { background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .detail-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .detail-row:last-child { margin-bottom: 0; }
+    .detail-row a { color: #6366f1; text-decoration: none; }
+    .greeting { font-size: 17px; color: #334155; margin-bottom: 20px; text-align: center; font-weight: 600; }
+    .status-badge {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px; border-radius: 12px; margin-bottom: 20px;
+      font-weight: 700; font-size: 15px;
+    }
+    .status-confirmed { background: #f0fdf4; color: #166534; border: 2px solid #86efac; }
+    .status-declined  { background: #fef2f2; color: #991b1b; border: 2px solid #fecaca; }
+    .status-pending   { background: #eff6ff; color: #1d4ed8; border: 2px solid #bfdbfe; }
+    .btn-group { display: flex; flex-direction: column; gap: 12px; }
+    .btn {
+      width: 100%; padding: 16px;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-confirm { background: #22c55e; color: white; }
+    .btn-confirm:hover { background: #16a34a; transform: translateY(-1px); }
+    .btn-decline { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+    .btn-decline:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+    .btn-change { background: #eff6ff; color: #3b82f6; border: 1.5px solid #bfdbfe; font-size: 14px; padding: 10px; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .section { margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 14px; }
+    .guests-question { font-size: 15px; color: #334155; margin-bottom: 14px; }
+    .btn-row { display: flex; gap: 10px; }
+    .btn-sm {
+      flex: 1; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #475569;
+      transition: all 0.15s;
+    }
+    .btn-sm.active { background: #6366f1; color: white; border-color: #6366f1; }
+    .btn-sm:hover:not(.active) { background: #f8fafc; }
+    .guest-form { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .guest-card { background: #f8fafc; border-radius: 10px; padding: 14px; position: relative; }
+    .guest-card .remove { position: absolute; top: 10px; left: 10px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 18px; }
+    .guest-card .remove:hover { color: #dc2626; }
+    input, select {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 14px; outline: none; transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus { border-color: #6366f1; }
+    .inp-label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
+    .add-guest-btn {
+      width: 100%; padding: 10px; border: 1.5px dashed #cbd5e1;
+      border-radius: 10px; background: none; cursor: pointer; color: #64748b;
+      font-size: 14px; transition: all 0.15s;
+    }
+    .add-guest-btn:hover { border-color: #6366f1; color: #6366f1; background: #eff6ff; }
+    .submit-btn {
+      width: 100%; padding: 15px; margin-top: 20px;
+      background: #6366f1; color: white; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .submit-btn:hover { background: #4f46e5; }
+    .submit-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+    .success-screen { text-align: center; }
+    .success-icon { font-size: 64px; margin-bottom: 16px; }
+    .success-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .success-msg { font-size: 14px; color: #64748b; line-height: 1.6; }
+    .error-screen { text-align: center; padding: 20px; }
+    .loader { text-align: center; padding: 40px; color: #94a3b8; font-size: 15px; }
+    .waze-link { display: inline-flex; align-items: center; gap: 6px; color: #6366f1; text-decoration: none; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="card" id="app">
+  <div class="loader">⏳ טוען...</div>
+</div>
+
+<script>
+  const token = location.pathname.split('/').pop();
+  let data = null; // { registrant, show }
+  let state = 'loading'; // loading | respond | guests | done | error
+
+  async function init() {
+    try {
+      const res = await fetch(`/api/rsvp/${token}`);
+      if (!res.ok) throw new Error('קישור לא תקין או שפג תוקפו');
+      data = await res.json();
+      renderRespond();
+    } catch(e) {
+      renderError(e.message);
+    }
+  }
+
+  function renderRespond() {
+    const { registrant: r, show: s } = data;
+    const locationHtml = s.type === 'virtual'
+      ? `<div class="detail-row">💻 <a href="${s.address||'#'}" target="_blank">${s.address||'קישור זום'}</a></div>`
+      : `<div class="detail-row">📍 ${s.address||s.venue||''}</div>${s.wazeLink?`<div class="detail-row">🗺️ <a href="${s.wazeLink}" target="_blank" class="waze-link">נווט ב-Waze</a></div>`:''}`;
+
+    const statusHtml = r.status === 'confirmed'
+      ? `<div class="status-badge status-confirmed">✅ אישרת הגעה למופע</div>`
+      : r.status === 'declined'
+      ? `<div class="status-badge status-declined">❌ ביטלת השתתפות</div>`
+      : `<div class="status-badge status-pending">📋 ממתין לתשובתך</div>`;
+
+    const changeBtn = (r.status === 'confirmed' || r.status === 'declined')
+      ? `<button class="btn btn-change" onclick="resetChoice()">✏️ שנה תשובה</button>`
+      : '';
+
+    document.getElementById('app').innerHTML = `
+      <div class="logo">🎭</div>
+      <div class="brand">שקוף בחזית · ירון אנטניר</div>
+      <div class="show-name">${s.showName||s.name||'מופע'}</div>
+      <div class="details">
+        ${s.date ? `<div class="detail-row">📅 ${formatDate(s.date)}${s.time ? ' · ' + s.time : ''}</div>` : ''}
+        ${locationHtml}
+      </div>
+      <div class="greeting">שלום ${r.name}! 👋</div>
+      ${statusHtml}
+      ${r.status === 'pending' || r.status === null ? `
+        <div class="btn-group">
+          <button class="btn btn-confirm" onclick="startConfirm()">✅ כן, אני מגיע/ה!</button>
+          <button class="btn btn-decline" onclick="doDecline()">❌ לא אוכל להגיע</button>
+        </div>
+      ` : changeBtn}
+    `;
+  }
+
+  function resetChoice() {
+    data.registrant.status = 'pending';
+    renderRespond();
+  }
+
+  function startConfirm() {
+    renderGuestForm();
+  }
+
+  function renderGuestForm() {
+    const { registrant: r, show: s } = data;
+    document.getElementById('app').innerHTML = `
+      <div class="logo">🎭</div>
+      <div class="brand">שקוף בחזית · ירון אנטניר</div>
+      <div class="show-name">${s.showName||s.name||'מופע'}</div>
+
+      <div class="section">
+        <div class="guests-question">האם יצטרפו אליך אורחים?</div>
+        <div class="btn-row">
+          <button class="btn-sm ${getGuestChoice()===false?'active':''}" id="noGuests" onclick="setGuestChoice(false)">לא, רק אני</button>
+          <button class="btn-sm ${getGuestChoice()===true?'active':''}" id="yesGuests" onclick="setGuestChoice(true)">כן, יש לי אורחים</button>
+        </div>
+
+        <div id="guestList" style="display:${getGuestChoice()===true?'block':'none'}">
+          <div class="guest-form" id="guestsContainer"></div>
+          <button class="add-guest-btn" onclick="addGuest()" style="margin-top:10px">+ הוסף אורח</button>
+        </div>
+
+        <button class="submit-btn" onclick="submitConfirm()" id="submitBtn">✅ אשר הגעה</button>
+        <button class="btn btn-decline" onclick="renderRespond()" style="margin-top:10px">← חזרה</button>
+      </div>
+    `;
+  }
+
+  let guestChoice = null;
+  let guests = [];
+
+  function getGuestChoice() { return guestChoice; }
+
+  function setGuestChoice(v) {
+    guestChoice = v;
+    document.getElementById('noGuests').className = 'btn-sm' + (v===false?' active':'');
+    document.getElementById('yesGuests').className = 'btn-sm' + (v===true?' active':'');
+    document.getElementById('guestList').style.display = v ? 'block' : 'none';
+    if (v && guests.length === 0) addGuest();
+  }
+
+  function addGuest() {
+    const id = Date.now();
+    guests.push({ id, name:'', phone:'' });
+    renderGuests();
+  }
+
+  function removeGuest(id) {
+    guests = guests.filter(g => g.id !== id);
+    renderGuests();
+  }
+
+  function updateGuest(id, field, val) {
+    const g = guests.find(x=>x.id===id);
+    if (g) g[field] = val;
+  }
+
+  function renderGuests() {
+    const container = document.getElementById('guestsContainer');
+    if (!container) return;
+    container.innerHTML = guests.map((g,i) => `
+      <div class="guest-card">
+        <button class="remove" onclick="removeGuest(${g.id})">✕</button>
+        <div style="font-size:12px;font-weight:700;color:#6366f1;margin-bottom:10px">אורח ${i+1}</div>
+        <div style="margin-bottom:8px">
+          <span class="inp-label">שם מלא</span>
+          <input type="text" value="${g.name}" oninput="updateGuest(${g.id},'name',this.value)" placeholder="שם האורח..." />
+        </div>
+        <div>
+          <span class="inp-label">מספר טלפון</span>
+          <input type="tel" value="${g.phone}" oninput="updateGuest(${g.id},'phone',this.value)" placeholder="050-0000000" style="direction:ltr;text-align:left" />
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function submitConfirm() {
+    const btn = document.getElementById('submitBtn');
+    if (guestChoice === true) {
+      // ולידציה אורחים
+      const invalid = guests.filter(g => !g.name.trim() || !g.phone.trim());
+      if (invalid.length > 0) {
+        alert('נא למלא שם וטלפון לכל אורח');
+        return;
+      }
+    }
+    btn.disabled = true; btn.textContent = 'שולח...';
+    try {
+      const body = {
+        action: 'confirm',
+        guestCount: guestChoice ? guests.length : 0,
+        guests: guestChoice ? guests.map(g=>({name:g.name,phone:g.phone})) : [],
+      };
+      const res = await fetch(`/api/rsvp/${token}`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+      });
+      const d = await res.json();
+      if (res.ok) renderSuccess('confirmed');
+      else { btn.disabled=false; btn.textContent='✅ אשר הגעה'; alert(d.error||'שגיאה'); }
+    } catch(e) { btn.disabled=false; btn.textContent='✅ אשר הגעה'; alert('שגיאה בשליחה'); }
+  }
+
+  async function doDecline() {
+    if (!confirm('האם אתה בטוח שברצונך לבטל השתתפות?')) return;
+    try {
+      const res = await fetch(`/api/rsvp/${token}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'decline' })
+      });
+      const d = await res.json();
+      if (res.ok) renderSuccess('declined');
+      else alert(d.error||'שגיאה');
+    } catch(e) { alert('שגיאה בשליחה'); }
+  }
+
+  function renderSuccess(action) {
+    const { show: s } = data;
+    const locationHtml = s.type === 'virtual'
+      ? `<p>💻 <a href="${s.address||'#'}" target="_blank">${s.address||'קישור זום'}</a></p>`
+      : `<p>📍 ${s.address||s.venue||''}${s.wazeLink ? `<br/><a href="${s.wazeLink}" target="_blank">🗺️ נווט ב-Waze</a>` : ''}</p>`;
+
+    if (action === 'confirmed') {
+      document.getElementById('app').innerHTML = `
+        <div class="success-screen">
+          <div class="success-icon">🎉</div>
+          <div class="success-title" style="color:#166534">אישרת הגעה!</div>
+          <div class="success-msg">
+            <p>נהדר! נתראה ב<strong>${s.showName||s.name||'מופע'}</strong></p>
+            <p>📅 ${formatDate(s.date||'')}${s.time?' · '+s.time:''}</p>
+            ${locationHtml}
+            <p style="margin-top:14px;color:#94a3b8;font-size:12px">— ירון אנטניר · שקוף בחזית</p>
+          </div>
+        </div>`;
+    } else {
+      document.getElementById('app').innerHTML = `
+        <div class="success-screen">
+          <div class="success-icon">😔</div>
+          <div class="success-title" style="color:#64748b">קיבלנו את ביטולך</div>
+          <div class="success-msg">
+            <p>תודה על העדכון. נתראה בפעם הבאה!</p>
+            <p style="margin-top:14px"><button onclick="location.reload()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px">שינית דעתך? לחץ כאן</button></p>
+            <p style="margin-top:14px;color:#94a3b8;font-size:12px">— ירון אנטניר · שקוף בחזית</p>
+          </div>
+        </div>`;
+    }
+  }
+
+  function renderError(msg) {
+    document.getElementById('app').innerHTML = `
+      <div class="error-screen">
+        <div style="font-size:48px;margin-bottom:16px">😕</div>
+        <div style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:8px">הקישור אינו תקין</div>
+        <div style="font-size:14px;color:#64748b">${msg||'הקישור לא נמצא או שפג תוקפו.'}</div>
+      </div>`;
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleDateString('he-IL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    } catch { return d; }
+  }
+
+  init();
+</script>
+</body>
+</html>

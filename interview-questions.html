@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שאלות ראיון — בדיקת שוק CRM</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f7ff;
+    color: #1e293b;
+    padding: 24px 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 22px;
+    color: #6d28d9;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+  }
+
+  .rules {
+    background: #ede9fe;
+    border-right: 4px solid #7c3aed;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+  }
+
+  .rules-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #5b21b6;
+    margin-bottom: 8px;
+  }
+
+  .rules ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .rules li {
+    font-size: 13px;
+    color: #4c1d95;
+    padding: 3px 0;
+  }
+
+  .rules li::before {
+    content: "✓ ";
+    color: #7c3aed;
+    font-weight: bold;
+  }
+
+  .question-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(109,40,217,0.08);
+    border: 1px solid #e9e3ff;
+    position: relative;
+  }
+
+  .q-num {
+    display: inline-block;
+    background: #6d28d9;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 26px;
+    float: left;
+    margin-top: 2px;
+  }
+
+  .q-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 6px;
+    padding-left: 36px;
+  }
+
+  .q-goal {
+    font-size: 12px;
+    color: #94a3b8;
+    padding-left: 36px;
+  }
+
+  .q-goal::before {
+    content: "מטרה: ";
+    color: #a78bfa;
+    font-weight: 600;
+  }
+
+  .notes-box {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .notes-label {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .notes-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .notes-line {
+    height: 1px;
+    background: #e2e8f0;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .reminder {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  .site {
+    font-size: 12px;
+    color: #a78bfa;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; padding: 20px; }
+    .question-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    .rules { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎭</div>
+  <h1>שאלות ראיון — בדיקת שוק</h1>
+  <div class="subtitle">לא למכור. להקשיב. להבין.</div>
+</header>
+
+<div class="rules">
+  <div class="rules-title">כללי השיחה</div>
+  <ul>
+    <li>לא לדבר על המערכת עד שסיימת לשמוע</li>
+    <li>לתעד ציטוטים מדויקים — לא פרפרזות</li>
+    <li>לשאול "למה?" על כל תשובה מעניינת</li>
+    <li>להקשיב לכאב — לא לתכונות</li>
+  </ul>
+</div>
+
+<div class="question-card">
+  <span class="q-num">1</span>
+  <div class="q-text">כמה מופעים בחודש יש לך בממוצע?</div>
+  <div class="q-goal">הבנת עומס ו-scale</div>
+</div>
+
+<div class="question-card">
+  <span class="q-num">2</span>
+  <div class="q-text">איך אתה/את מנהל/ת כיום את רשימת המתעניינים בכרטיסים?</div>
+  <div class="q-goal">כאב קיים</div>
+</div>
+
+<div class="question-card">
+  <span class="q-num">3</span>
+  <div class="q-text">כמה זמן לוקח לך לשלוח תזכורת לכל הקהל לפני מופע?</div>
+  <div class="q-goal">כמות זמן שנחסכת</div>
+</div>
+
+<div class="question-card">
+  <span class="q-num">4</span>
+  <div class="q-text">האם היה מצב שאיבדת לקוח כי לא זכרת לחזור אליו?</div>
+  <div class="q-goal">כאב רגשי + כסף</div>
+</div>
+
+<div class="question-card">
+  <span class="q-num">5</span>
+  <div class="q-text">מה הכלי שהכי קשה לך לוותר עליו עכשיו?</div>
+  <div class="q-goal">מתחרים + שמרנות</div>
+</div>
+
+<div class="question-card">
+  <span class="q-num">6</span>
+  <div class="q-text">כמה היית מוכן לשלם בחודש עבור מערכת שתעשה הכל אוטומטי?</div>
+  <div class="q-goal">נכונות לשלם + טווח מחיר</div>
+</div>
+
+<div class="notes-box">
+  <div class="notes-label">📝 הערות מהשיחה</div>
+  <div class="notes-lines">
+    <div class="notes-line"></div>
+    <div class="notes-line"></div>
+    <div class="notes-line"></div>
+    <div class="notes-line"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="reminder">3 "כן" ברורים מ-5 שיחות = אות ירוק ✅</div>
+  <div class="site">shakufbahazit.co.il</div>
+</footer>
+
+</body>
+</html>

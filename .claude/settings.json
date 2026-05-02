@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Edit(./server.js)",
+      "Edit(./public/**)",
+      "Edit(./CLAUDE.md)",
+      "Edit(./CRM-PROMPT.md)",
+      "Edit(./.claude/**)",
+      "Edit(./docs/**)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./data/tokens.json)",
+      "Read(./data/extra-tokens.json)",
+      "Read(./data/users.json)",
+      "Read(./data/sessions/**)",
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout main)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ],
+    "ask": [
+      "Edit(./data/**)",
+      "Edit(./package.json)",
+      "Edit(./Dockerfile)",
+      "Edit(./.env*)",
+      "Edit(./.gitignore)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)"
+    ]
+  },
+  "env": {
+    "PROJECT_NAME": "shakuf-crm",
+    "PROJECT_LANG": "he-IL",
+    "PROJECT_RTL": "true"
+  }
+}

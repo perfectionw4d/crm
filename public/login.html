@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>כניסה — שקוף בחזית CRM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .logo { font-size: 36px; margin-bottom: 8px; }
+    h1 { font-size: 22px; color: #1e293b; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: #94a3b8; margin-bottom: 28px; }
+    label { display: block; text-align: right; font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 600; }
+    .field { margin-bottom: 14px; }
+    .pw-wrap { position: relative; }
+    .field input, .pw-wrap input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: right;
+    }
+    .pw-wrap input { padding-left: 42px; direction: ltr; }
+    .field input[type="email"] { direction: ltr; text-align: left; }
+    .field input:focus, .pw-wrap input:focus { border-color: #6366f1; }
+    .eye-btn {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 18px;
+      padding: 0;
+      line-height: 1;
+    }
+    .eye-btn:hover { color: #475569; }
+    .btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #4f46e5; }
+    .btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+    .error {
+      margin-top: 12px;
+      color: #dc2626;
+      font-size: 13px;
+      display: none;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 14px;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+    .link-btn {
+      background: none;
+      border: none;
+      color: #6366f1;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .link-btn:hover { color: #4f46e5; }
+    .forgot-box {
+      display: none;
+      margin-top: 16px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: right;
+    }
+    .forgot-box label { margin-bottom: 8px; color: #334155; }
+    .forgot-box input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 14px;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+    .forgot-box input:focus { border-color: #6366f1; }
+    .btn-sm {
+      padding: 8px 18px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-sm:hover { background: #4f46e5; }
+    .sub-msg { font-size: 13px; margin-top: 8px; display: none; }
+    /* Admin password section */
+    .admin-section {
+      display: none;
+      margin-top: 16px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: right;
+    }
+    .admin-section label { margin-bottom: 8px; }
+    .admin-pw-wrap { position: relative; }
+    .admin-pw-wrap input {
+      width: 100%;
+      padding: 9px 42px 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 14px;
+      outline: none;
+      direction: ltr;
+      margin-bottom: 10px;
+    }
+    .admin-pw-wrap input:focus { border-color: #6366f1; }
+    .admin-pw-wrap .eye-btn { right: 10px; left: auto; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🎭</div>
+    <h1>שקוף בחזית CRM</h1>
+    <p class="sub">מערכת ניהול קשרי לקוחות</p>
+
+    <!-- Email login form -->
+    <div class="field">
+      <label>כתובת אימייל</label>
+      <input type="email" id="emailInput" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label>סיסמה</label>
+      <div class="pw-wrap">
+        <input type="password" id="pwInput" placeholder="הכנס סיסמה..." onkeydown="if(event.key==='Enter')loginEmail()" autocomplete="current-password" />
+        <button class="eye-btn" onclick="toggleEye('pwInput','eyeBtn')" id="eyeBtn" title="הצג/הסתר">👁</button>
+      </div>
+    </div>
+    <button class="btn" id="loginBtn" onclick="loginEmail()">כניסה</button>
+    <div class="error" id="err"></div>
+
+    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+      <button class="link-btn" onclick="toggleForgot()">שכחתי סיסמה</button>
+      <button class="link-btn" onclick="toggleAdmin()">כניסת מנהל ראשי</button>
+    </div>
+
+    <!-- Forgot password box -->
+    <div class="forgot-box" id="forgotBox">
+      <label>שחזור סיסמה באימייל</label>
+      <input type="email" id="forgotEmail" placeholder="הכנס את כתובת האימייל שלך..." onkeydown="if(event.key==='Enter')forgotPw()" />
+      <button class="btn-sm" onclick="forgotPw()">שלח קישור איפוס</button>
+      <div class="sub-msg" id="forgotMsg"></div>
+    </div>
+
+    <!-- Admin password box -->
+    <div class="admin-section" id="adminBox">
+      <label>סיסמת מנהל ראשי</label>
+      <div class="admin-pw-wrap">
+        <input type="password" id="adminPw" placeholder="הכנס סיסמת מנהל..." onkeydown="if(event.key==='Enter')loginAdmin()" />
+        <button class="eye-btn" onclick="toggleEye('adminPw','eyeBtn2')" id="eyeBtn2" title="הצג/הסתר">👁</button>
+      </div>
+      <button class="btn-sm" onclick="loginAdmin()">כניסה כמנהל</button>
+      <div class="sub-msg" id="adminMsg"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('emailInput').focus();
+
+    function toggleEye(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+      else { input.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function showErr(msg) {
+      const el = document.getElementById('err');
+      el.textContent = '❌ ' + msg;
+      el.style.display = 'block';
+    }
+    function clearErr() { document.getElementById('err').style.display = 'none'; }
+
+    async function loginEmail() {
+      clearErr();
+      const email = document.getElementById('emailInput').value.trim();
+      const pw    = document.getElementById('pwInput').value;
+      if (!email) { showErr('נא להזין כתובת אימייל'); return; }
+      if (!pw)    { showErr('נא להזין סיסמה'); return; }
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'מתחבר...';
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pw }),
+      });
+      btn.disabled = false; btn.textContent = 'כניסה';
+      if (res.ok) { window.location.href = '/'; }
+      else {
+        const d = await res.json().catch(() => ({}));
+        const is429 = res.status === 429;
+        showErr((is429 ? '🚫 ' : '❌ ') + (d.error || 'פרטי כניסה שגויים'));
+        if (!is429) {
+          document.getElementById('pwInput').value = '';
+          document.getElementById('pwInput').focus();
+        }
+      }
+    }
+
+    async function loginAdmin() {
+      const pw  = document.getElementById('adminPw').value;
+      const msg = document.getElementById('adminMsg');
+      msg.style.display = 'none';
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      if (res.ok) { window.location.href = '/'; }
+      else {
+        const d = await res.json().catch(() => ({}));
+        msg.style.display = 'block';
+        msg.style.color   = res.status === 429 ? '#b45309' : '#dc2626';
+        msg.textContent   = (res.status === 429 ? '🚫 ' : '❌ ') + (d.error || 'סיסמה שגויה');
+        document.getElementById('adminPw').value = '';
+      }
+    }
+
+    async function forgotPw() {
+      const email = document.getElementById('forgotEmail').value.trim();
+      const msg   = document.getElementById('forgotMsg');
+      msg.style.display = 'none';
+      if (!email) { msg.style.color='#dc2626'; msg.textContent='נא להזין כתובת אימייל'; msg.style.display='block'; return; }
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      msg.style.display = 'block';
+      msg.style.color   = '#16a34a';
+      msg.textContent   = '✅ אם הכתובת קיימת במערכת, נשלח אליה קישור לאיפוס סיסמה';
+    }
+
+    function toggleForgot() {
+      const box = document.getElementById('forgotBox');
+      const admin = document.getElementById('adminBox');
+      admin.style.display = 'none';
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+      if (box.style.display === 'block') {
+        // Pre-fill email from main input
+        const em = document.getElementById('emailInput').value.trim();
+        if (em) document.getElementById('forgotEmail').value = em;
+        document.getElementById('forgotEmail').focus();
+      }
+    }
+
+    function toggleAdmin() {
+      const box = document.getElementById('adminBox');
+      const forgot = document.getElementById('forgotBox');
+      forgot.style.display = 'none';
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+      if (box.style.display === 'block') document.getElementById('adminPw').focus();
+    }
+  </script>
+</body>
+</html>

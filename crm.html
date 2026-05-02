@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM | שקוף בחזית</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; direction: rtl; color: #1e293b; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    input, textarea, select { font-family: inherit; direction: rtl; }
+    button { cursor: pointer; font-family: inherit; }
+    .sidebar { width: 240px; min-height: 100vh; background: linear-gradient(160deg, #1e1b4b 0%, #312e81 100%); color: white; display: flex; flex-direction: column; position: fixed; right: 0; top: 0; bottom: 0; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
+    .main-content { margin-right: 240px; min-height: 100vh; padding: 28px; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+    .btn-primary { background: #4f46e5; color: white; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary { background: #e2e8f0; color: #475569; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-sm { padding: 5px 12px; font-size: 13px; }
+    .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .input { width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: #1e293b; outline: none; transition: border-color 0.15s; }
+    .input:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal { background: white; border-radius: 16px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .tab-btn { padding: 8px 18px; border: none; background: none; font-size: 14px; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 20px; cursor: pointer; border-radius: 8px; margin: 2px 10px; font-size: 14px; font-weight: 500; transition: all 0.15s; color: rgba(255,255,255,0.75); text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: white; }
+    .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .conv-item { border-right: 3px solid #e2e8f0; padding: 10px 14px; margin-bottom: 10px; border-radius: 0 8px 8px 0; background: #f8fafc; }
+    .show-item { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; background: #f8fafc; }
+    .contact-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.12s; }
+    .contact-row:hover { background: #f8fafc; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    select.input { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 10px center; background-size: 16px; padding-left: 32px; }
+    @media (max-width: 768px) { .sidebar { width: 200px; } .main-content { margin-right: 200px; padding: 16px; } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const uid = () => Math.random().toString(36).substr(2, 9);
+const today = () => new Date().toISOString().split('T')[0];
+const fmtDate = d => d ? new Date(d).toLocaleDateString('he-IL') : '—';
+const initials = name => name ? name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?';
+const COLORS = ['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#0284c7','#16a34a'];
+const colorForName = name => COLORS[name.charCodeAt(0) % COLORS.length];
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+const STATUS = {
+  lead:           { label: 'ליד',          bg: '#dbeafe', color: '#1d4ed8' },
+  warm:           { label: 'חם',           bg: '#ffedd5', color: '#c2410c' },
+  booked:         { label: 'הוזמן',        bg: '#dcfce7', color: '#166534' },
+  completed:      { label: 'הושלם',        bg: '#f1f5f9', color: '#475569' },
+  vip:            { label: 'VIP',          bg: '#f3e8ff', color: '#7e22ce' },
+  'not-interested':{ label: 'לא מעוניין', bg: '#fee2e2', color: '#991b1b' },
+};
+const CONV_TYPES = { call:'שיחת טלפון', email:'אימייל', meeting:'פגישה', whatsapp:'וואטסאפ', other:'אחר' };
+const SHOW_STATUS = { inquiry:'פנייה', proposal:'הצעה נשלחה', scheduled:'מתוכנן', completed:'הושלם', cancelled:'בוטל' };
+const SHOW_STATUS_COLOR = { inquiry:'#dbeafe', proposal:'#fef3c7', scheduled:'#dcfce7', completed:'#e0e7ff', cancelled:'#fee2e2' };
+const SHOW_STATUS_TEXT = { inquiry:'#1d4ed8', proposal:'#92400e', scheduled:'#166534', completed:'#3730a3', cancelled:'#991b1b' };
+
+// ─── Sample Data ──────────────────────────────────────────────────────────────
+const SAMPLES = [
+  { id:'s1', name:'מרכז תרבות רמת גן', type:'organization', contactPerson:'דנה לוי', phone:'052-1234567', email:'dana@culture.rg.il', city:'רמת גן', status:'warm', source:'המלצה', notes:'מתעניינים במופע לחנוכה. לחזור אליהם עם הצעת מחיר.', nextFollowUp:'2026-04-15', conversations:[{id:'cv1',date:'2026-03-20',type:'call',content:'שיחה ראשונית — מעוניינים במופע לקהל משפחתי לחנוכה. נשלח להם הצעה.'}], showHistory:[], tags:['תרבות','משפחות'], createdAt:'2026-03-20' },
+  { id:'s2', name:'אבי כהן', type:'individual', contactPerson:'', phone:'054-9876543', email:'avi@gmail.com', city:'תל אביב', status:'vip', source:'מופע', notes:'חובב נלהב! היה בשלושה מופעים. שלח חברים.', nextFollowUp:'', conversations:[{id:'cv2',date:'2026-02-14',type:'whatsapp',content:'שלח הודעה אחרי המופע — "היה מדהים, תודה רבה!"'}], showHistory:[{id:'sh1',date:'2026-02-14',venue:'תיאטרון הבימה',showType:'מופע רגיל',status:'completed',fee:'',notes:''}], tags:['VIP','קהל נאמן'], createdAt:'2025-10-01' },
+  { id:'s3', name:'עיריית נתניה — מחלקת תרבות', type:'organization', contactPerson:'יוסי מזרחי', phone:'09-8765432', email:'yossi@netanya.muni.il', city:'נתניה', status:'booked', source:'יוזמה עצמית', notes:'אירוע לחג הפורים. מאורגן.', nextFollowUp:'2026-04-20', conversations:[{id:'cv3',date:'2026-03-01',type:'email',content:'אישרו הזמנה למופע פורים. עדיין ממתין לחוזה.'}], showHistory:[{id:'sh2',date:'2026-03-13',venue:'אולם תרבות נתניה',showType:'הרצאה',status:'scheduled',fee:'2500',notes:''}], tags:['עירייה'], createdAt:'2026-02-15' },
+  { id:'s4', name:'שרה ברוך', type:'individual', contactPerson:'', phone:'050-1112233', email:'sarah@walla.com', city:'חיפה', status:'lead', source:'אתר האינטרנט', notes:'', nextFollowUp:'', conversations:[], showHistory:[], tags:[], createdAt:'2026-04-01' },
+];
+
+// ─── Storage ──────────────────────────────────────────────────────────────────
+const load = () => { try { const d=localStorage.getItem('crm_v2'); return d?JSON.parse(d):SAMPLES; } catch{ return SAMPLES; } };
+const save = d => { try { localStorage.setItem('crm_v2',JSON.stringify(d)); } catch{} };
+
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const s = STATUS[status] || STATUS.lead;
+  return <span className="badge" style={{background:s.bg, color:s.color}}>{s.label}</span>;
+}
+
+// ─── Icon components ─────────────────────────────────────────────────────────
+const Icon = ({ name, size=18, color='currentColor' }) => {
+  const icons = {
+    home:     <><rect x="3" y="10" width="18" height="11" rx="1"/><polyline points="3 10 12 3 21 10"/></>,
+    users:    <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    plus:     <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+    search:   <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
+    phone:    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
+    mail:     <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
+    map:      <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
+    calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
+    edit:     <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+    trash:    <><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></>,
+    back:     <><polyline points="15 18 9 12 15 6"/></>,
+    star:     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+    mic:      <><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>,
+    bell:     <><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
+    tag:      <><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>,
+    x:        <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+    check:    <polyline points="20 6 9 17 4 12"/>,
+    note:     <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>,
+    msg:      <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>,
+    building: <><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+    person:   <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {icons[name]}
+    </svg>
+  );
+};
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+function Sidebar({ view, setView, stats, onNewContact }) {
+  return (
+    <div className="sidebar">
+      <div style={{padding:'24px 20px 16px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+          <div style={{width:36,height:36,background:'rgba(255,255,255,0.15)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <Icon name="mic" size={20} color="white"/>
+          </div>
+          <div>
+            <div style={{fontWeight:700,fontSize:15,color:'white',lineHeight:1.2}}>שקוף בחזית</div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>מערכת CRM</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{padding:'0 10px',flex:1}}>
+        <NavItem icon="home" label="לוח בקרה" active={view==='dashboard'} onClick={()=>setView('dashboard')}/>
+        <NavItem icon="users" label={`אנשי קשר (${stats.total})`} active={view==='contacts'||view==='contact-detail'} onClick={()=>setView('contacts')}/>
+      </div>
+
+      <div style={{padding:'16px 14px',borderTop:'1px solid rgba(255,255,255,0.1)'}}>
+        <button className="btn btn-primary" onClick={onNewContact}
+          style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:8,background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.25)',color:'white',padding:'10px 16px',borderRadius:10}}>
+          <Icon name="plus" size={16} color="white"/>
+          איש קשר חדש
+        </button>
+      </div>
+
+      <div style={{padding:'12px 14px',borderTop:'1px solid rgba(255,255,255,0.1)'}}>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          <MiniStat label="לידים" value={stats.leads} color="#93c5fd"/>
+          <MiniStat label="חמים" value={stats.warm} color="#fdba74"/>
+          <MiniStat label="מעקב" value={stats.followUps} color="#86efac"/>
+          <MiniStat label="VIP" value={stats.vip} color="#d8b4fe"/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <div className={`nav-item ${active?'active':''}`} onClick={onClick}>
+      <Icon name={icon} size={17} color={active?'white':'rgba(255,255,255,0.7)'}/>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, color }) {
+  return (
+    <div style={{flex:1,minWidth:54,background:'rgba(255,255,255,0.08)',borderRadius:8,padding:'6px 10px',textAlign:'center'}}>
+      <div style={{fontSize:18,fontWeight:700,color}}>{value}</div>
+      <div style={{fontSize:10,color:'rgba(255,255,255,0.55)'}}>{label}</div>
+    </div>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function Dashboard({ stats, upcomingFollowUps, recentContacts, onSelectContact, onNewContact }) {
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
+        <div>
+          <h1 style={{fontSize:24,fontWeight:700,color:'#1e293b'}}>לוח בקרה</h1>
+          <p style={{color:'#64748b',fontSize:14,marginTop:2}}>ברוך הבא, ירון!</p>
+        </div>
+        <button className="btn btn-primary" onClick={onNewContact} style={{display:'flex',alignItems:'center',gap:8}}>
+          <Icon name="plus" size={16} color="white"/> איש קשר חדש
+        </button>
+      </div>
+
+      {/* Stats row */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:16,marginBottom:24}}>
+        <StatCard icon="users" label="סה״כ אנשי קשר" value={stats.total} color="#4f46e5" bg="#eef2ff"/>
+        <StatCard icon="star" label="לידים" value={stats.leads} color="#2563eb" bg="#dbeafe"/>
+        <StatCard icon="bell" label="מעקבים היום" value={stats.followUps} color="#d97706" bg="#fef3c7" urgent={stats.followUps>0}/>
+        <StatCard icon="check" label="הוזמנו" value={stats.booked} color="#16a34a" bg="#dcfce7"/>
+        <StatCard icon="mic" label="VIP" value={stats.vip} color="#7e22ce" bg="#f3e8ff"/>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+        {/* Upcoming follow-ups */}
+        <div className="card" style={{padding:20}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+            <Icon name="calendar" size={16} color="#d97706"/> מעקבים קרובים
+          </h3>
+          {upcomingFollowUps.length === 0
+            ? <p style={{color:'#94a3b8',fontSize:13}}>אין מעקבים מתוכננים</p>
+            : upcomingFollowUps.map(c => (
+              <div key={c.id} onClick={()=>onSelectContact(c.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',cursor:'pointer',borderBottom:'1px solid #f1f5f9'}}>
+                <Avatar name={c.name} size={32}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:'#1e293b'}}>{c.name}</div>
+                  <div style={{fontSize:12,color:'#64748b'}}>{fmtDate(c.nextFollowUp)}</div>
+                </div>
+                <StatusBadge status={c.status}/>
+              </div>
+            ))
+          }
+        </div>
+
+        {/* Recent contacts */}
+        <div className="card" style={{padding:20}}>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+            <Icon name="users" size={16} color="#4f46e5"/> אנשי קשר אחרונים
+          </h3>
+          {recentContacts.map(c => (
+            <div key={c.id} onClick={()=>onSelectContact(c.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',cursor:'pointer',borderBottom:'1px solid #f1f5f9'}}>
+              <Avatar name={c.name} size={32}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:'#1e293b'}}>{c.name}</div>
+                <div style={{fontSize:12,color:'#64748b'}}>{c.type==='organization'?'ארגון':'יחיד'} · {c.city||'—'}</div>
+              </div>
+              <StatusBadge status={c.status}/>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, color, bg, urgent }) {
+  return (
+    <div className="stat-card" style={{borderRight: urgent?`3px solid ${color}`:'3px solid transparent'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        <div style={{width:40,height:40,background:bg,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <Icon name={icon} size={19} color={color}/>
+        </div>
+        <div>
+          <div style={{fontSize:24,fontWeight:700,color:'#1e293b'}}>{value}</div>
+          <div style={{fontSize:12,color:'#64748b'}}>{label}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Avatar ────────────────────────────────────────────────────────────────────
+function Avatar({ name, size=40 }) {
+  const bg = colorForName(name);
+  return (
+    <div className="avatar" style={{width:size,height:size,background:bg,color:'white',fontSize:size*0.38}}>
+      {initials(name)}
+    </div>
+  );
+}
+
+// ─── Contacts List ────────────────────────────────────────────────────────────
+function ContactsList({ contacts, allContacts, search, setSearch, statusFilter, setStatusFilter, typeFilter, setTypeFilter, onSelectContact, onNewContact }) {
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+        <h1 style={{fontSize:24,fontWeight:700}}>אנשי קשר</h1>
+        <button className="btn btn-primary" onClick={onNewContact} style={{display:'flex',alignItems:'center',gap:8}}>
+          <Icon name="plus" size={16} color="white"/> הוסף
+        </button>
+      </div>
+
+      {/* Search + Filters */}
+      <div className="card" style={{padding:16,marginBottom:16}}>
+        <div style={{position:'relative',marginBottom:12}}>
+          <span style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}}>
+            <Icon name="search" size={16} color="#94a3b8"/>
+          </span>
+          <input className="input" placeholder="חיפוש לפי שם, טלפון, עיר..." value={search} onChange={e=>setSearch(e.target.value)}
+            style={{paddingRight:38}}/>
+        </div>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          <FilterBtn label="הכל" active={statusFilter==='all'} onClick={()=>setStatusFilter('all')} count={allContacts.length}/>
+          {Object.entries(STATUS).map(([k,v])=>(
+            <FilterBtn key={k} label={v.label} active={statusFilter===k} onClick={()=>setStatusFilter(k)}
+              count={allContacts.filter(c=>c.status===k).length} color={v.color} bg={v.bg}/>
+          ))}
+          <div style={{borderRight:'1px solid #e2e8f0',margin:'0 4px'}}/>
+          <FilterBtn label="יחיד" active={typeFilter==='individual'} onClick={()=>setTypeFilter(typeFilter==='individual'?'all':'individual')} icon="person"/>
+          <FilterBtn label="ארגון" active={typeFilter==='organization'} onClick={()=>setTypeFilter(typeFilter==='organization'?'all':'organization')} icon="building"/>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="card">
+        <div style={{padding:'12px 16px',borderBottom:'1px solid #f1f5f9',display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:13,color:'#64748b'}}>{contacts.length} אנשי קשר</span>
+        </div>
+        {contacts.length === 0
+          ? <div style={{padding:40,textAlign:'center',color:'#94a3b8'}}>
+              <Icon name="users" size={32} color="#cbd5e1"/>
+              <p style={{marginTop:12}}>לא נמצאו אנשי קשר</p>
+            </div>
+          : contacts.map(c => <ContactRow key={c.id} contact={c} onClick={()=>onSelectContact(c.id)}/>)
+        }
+      </div>
+    </div>
+  );
+}
+
+function FilterBtn({ label, active, onClick, count, color, bg, icon }) {
+  return (
+    <button onClick={onClick} className="btn btn-sm"
+      style={{background: active?(bg||'#4f46e5'):'#f1f5f9', color: active?(color||'white'):'#475569', border: active?'none':'none', display:'flex',alignItems:'center',gap:4}}>
+      {icon && <Icon name={icon} size={13} color={active?(color||'white'):'#475569'}/>}
+      {label}
+      {count!==undefined && <span style={{opacity:0.7,fontSize:11}}>({count})</span>}
+    </button>
+  );
+}
+
+function ContactRow({ contact: c, onClick }) {
+  return (
+    <div className="contact-row" onClick={onClick}>
+      <Avatar name={c.name} size={40}/>
+      <div style={{flex:1,marginRight:12}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontWeight:600,fontSize:15,color:'#1e293b'}}>{c.name}</span>
+          {c.type==='organization' && <span style={{fontSize:11,color:'#7c3aed',background:'#f3e8ff',padding:'1px 7px',borderRadius:10}}>ארגון</span>}
+          {c.tags?.map(t=><span key={t} style={{fontSize:11,color:'#0891b2',background:'#cffafe',padding:'1px 7px',borderRadius:10}}>{t}</span>)}
+        </div>
+        <div style={{display:'flex',gap:14,marginTop:3,flexWrap:'wrap'}}>
+          {c.contactPerson && <span style={{fontSize:12,color:'#64748b'}}>📋 {c.contactPerson}</span>}
+          {c.phone && <span style={{fontSize:12,color:'#64748b'}}>📞 {c.phone}</span>}
+          {c.city && <span style={{fontSize:12,color:'#64748b'}}>📍 {c.city}</span>}
+          {c.nextFollowUp && <span style={{fontSize:12,color:c.nextFollowUp<=today()?'#dc2626':'#64748b'}}>🗓 {fmtDate(c.nextFollowUp)}</span>}
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+        <StatusBadge status={c.status}/>
+        <span style={{fontSize:11,color:'#94a3b8'}}>{c.showHistory?.length||0} מופעים · {c.conversations?.length||0} שיחות</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Contact Detail ───────────────────────────────────────────────────────────
+function ContactDetail({ contact: c, onEdit, onDelete, onAddConversation, onAddShow, onDeleteConversation, onDeleteShow, onBack, onUpdateStatus, onUpdateFollowUp, onUpdateNotes }) {
+  const [tab, setTab] = useState('info');
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesVal, setNotesVal] = useState(c.notes||'');
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+        <button className="btn btn-secondary btn-sm" onClick={onBack} style={{display:'flex',alignItems:'center',gap:6}}>
+          <Icon name="back" size={15}/> חזרה
+        </button>
+        <h2 style={{fontSize:20,fontWeight:700,flex:1}}>{c.name}</h2>
+        <button className="btn btn-secondary btn-sm" onClick={onEdit} style={{display:'flex',alignItems:'center',gap:6}}>
+          <Icon name="edit" size={14}/>עריכה
+        </button>
+        <button className="btn btn-danger btn-sm" onClick={onDelete} style={{display:'flex',alignItems:'center',gap:6}}>
+          <Icon name="trash" size={14}/>מחיקה
+        </button>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:20}}>
+        {/* Left panel */}
+        <div>
+          <div className="card" style={{padding:20,marginBottom:16}}>
+            <div style={{textAlign:'center',marginBottom:16}}>
+              <Avatar name={c.name} size={64}/>
+              <h3 style={{marginTop:10,fontWeight:700,fontSize:17}}>{c.name}</h3>
+              {c.contactPerson && <p style={{color:'#64748b',fontSize:13}}>{c.contactPerson}</p>}
+              <div style={{marginTop:8}}>
+                <StatusBadge status={c.status}/>
+              </div>
+            </div>
+
+            <InfoLine icon="phone" label={c.phone} href={`tel:${c.phone}`}/>
+            <InfoLine icon="mail" label={c.email} href={`mailto:${c.email}`}/>
+            <InfoLine icon="map" label={c.city}/>
+            <InfoLine icon="tag" label={c.source ? `מקור: ${c.source}` : null}/>
+            <InfoLine icon="calendar" label={`הוסף: ${fmtDate(c.createdAt)}`}/>
+          </div>
+
+          {/* Status quick-change */}
+          <div className="card" style={{padding:16,marginBottom:16}}>
+            <div className="label">שנה סטטוס</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:8}}>
+              {Object.entries(STATUS).map(([k,v])=>(
+                <button key={k} onClick={()=>onUpdateStatus(k)} className="badge"
+                  style={{background:c.status===k?v.color:v.bg, color:c.status===k?'white':v.color, cursor:'pointer', border:'none', fontSize:12, padding:'5px 10px'}}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Follow-up */}
+          <div className="card" style={{padding:16}}>
+            <div className="label" style={{marginBottom:8}}>📅 מועד מעקב</div>
+            <input type="date" className="input" value={c.nextFollowUp||''} onChange={e=>onUpdateFollowUp(e.target.value)} style={{fontSize:13}}/>
+          </div>
+        </div>
+
+        {/* Right panel - Tabs */}
+        <div className="card">
+          <div style={{borderBottom:'1px solid #f1f5f9',padding:'0 16px',display:'flex',gap:4}}>
+            <button className={`tab-btn ${tab==='info'?'active':''}`} onClick={()=>setTab('info')}>📋 מידע</button>
+            <button className={`tab-btn ${tab==='conversations'?'active':''}`} onClick={()=>setTab('conversations')}>
+              💬 שיחות ({c.conversations?.length||0})
+            </button>
+            <button className={`tab-btn ${tab==='shows'?'active':''}`} onClick={()=>setTab('shows')}>
+              🎭 מופעים ({c.showHistory?.length||0})
+            </button>
+          </div>
+
+          <div style={{padding:20}}>
+            {/* Info Tab */}
+            {tab==='info' && (
+              <div>
+                <div style={{marginBottom:20}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <div className="label">הערות</div>
+                    {!editingNotes
+                      ? <button className="btn btn-secondary btn-sm" onClick={()=>{ setNotesVal(c.notes||''); setEditingNotes(true); }}>ערוך</button>
+                      : <div style={{display:'flex',gap:8}}>
+                          <button className="btn btn-primary btn-sm" onClick={()=>{ onUpdateNotes(notesVal); setEditingNotes(false); }}>שמור</button>
+                          <button className="btn btn-secondary btn-sm" onClick={()=>setEditingNotes(false)}>ביטול</button>
+                        </div>
+                    }
+                  </div>
+                  {editingNotes
+                    ? <textarea className="input" rows={5} value={notesVal} onChange={e=>setNotesVal(e.target.value)} style={{resize:'vertical'}}/>
+                    : <div style={{background:'#f8fafc',borderRadius:8,padding:14,fontSize:14,color:c.notes?'#1e293b':'#94a3b8',minHeight:80,lineHeight:1.6}}>
+                        {c.notes||'אין הערות...'}
+                      </div>
+                  }
+                </div>
+
+                {c.tags?.length>0 && (
+                  <div>
+                    <div className="label" style={{marginBottom:8}}>תגיות</div>
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                      {c.tags.map(t=>(
+                        <span key={t} className="badge" style={{background:'#e0e7ff',color:'#3730a3',fontSize:13}}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Conversations Tab */}
+            {tab==='conversations' && (
+              <div>
+                <button className="btn btn-primary" onClick={onAddConversation} style={{marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+                  <Icon name="plus" size={15} color="white"/> הוסף שיחה
+                </button>
+                {(!c.conversations||c.conversations.length===0)
+                  ? <p style={{color:'#94a3b8',textAlign:'center',padding:30}}>אין שיחות רשומות</p>
+                  : c.conversations.map(cv=>(
+                      <div key={cv.id} className="conv-item" style={{borderRightColor:cv.type==='call'?'#4f46e5':cv.type==='whatsapp'?'#16a34a':cv.type==='email'?'#0891b2':'#f59e0b'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                            <span style={{fontSize:13,fontWeight:600,color:'#4f46e5'}}>{CONV_TYPES[cv.type]||cv.type}</span>
+                            <span style={{fontSize:12,color:'#94a3b8'}}>{fmtDate(cv.date)}</span>
+                          </div>
+                          <button onClick={()=>onDeleteConversation(cv.id)} style={{background:'none',border:'none',color:'#94a3b8',padding:2,borderRadius:4}}
+                            onMouseOver={e=>e.target.style.color='#dc2626'} onMouseOut={e=>e.target.style.color='#94a3b8'}>
+                            <Icon name="x" size={14}/>
+                          </button>
+                        </div>
+                        <p style={{fontSize:13,color:'#475569',lineHeight:1.6,margin:0}}>{cv.content}</p>
+                      </div>
+                    ))
+                }
+              </div>
+            )}
+
+            {/* Shows Tab */}
+            {tab==='shows' && (
+              <div>
+                <button className="btn btn-primary" onClick={onAddShow} style={{marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+                  <Icon name="plus" size={15} color="white"/> הוסף מופע/הרצאה
+                </button>
+                {(!c.showHistory||c.showHistory.length===0)
+                  ? <p style={{color:'#94a3b8',textAlign:'center',padding:30}}>אין מופעים רשומים</p>
+                  : c.showHistory.map(sh=>(
+                      <div key={sh.id} className="show-item">
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                          <div>
+                            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:4}}>
+                              <span style={{fontWeight:600,fontSize:14}}>{sh.venue||'—'}</span>
+                              <span className="badge" style={{background:SHOW_STATUS_COLOR[sh.status]||'#f1f5f9',color:SHOW_STATUS_TEXT[sh.status]||'#475569',fontSize:11}}>
+                                {SHOW_STATUS[sh.status]||sh.status}
+                              </span>
+                            </div>
+                            <div style={{fontSize:12,color:'#64748b',display:'flex',gap:12}}>
+                              <span>📅 {fmtDate(sh.date)}</span>
+                              {sh.showType && <span>🎭 {sh.showType}</span>}
+                              {sh.fee && <span>💰 ₪{sh.fee}</span>}
+                            </div>
+                            {sh.notes && <p style={{fontSize:12,color:'#64748b',marginTop:4,fontStyle:'italic'}}>{sh.notes}</p>}
+                          </div>
+                          <button onClick={()=>onDeleteShow(sh.id)} style={{background:'none',border:'none',color:'#94a3b8',padding:4,borderRadius:4}}
+                            onMouseOver={e=>e.target.style.color='#dc2626'} onMouseOut={e=>e.target.style.color='#94a3b8'}>
+                            <Icon name="x" size={14}/>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                }
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoLine({ icon, label, href }) {
+  if (!label) return null;
+  const content = (
+    <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid #f8fafc'}}>
+      <Icon name={icon} size={14} color="#94a3b8"/>
+      <span style={{fontSize:13,color:'#475569',flex:1}}>{label}</span>
+    </div>
+  );
+  return href ? <a href={href} style={{textDecoration:'none',display:'block'}}>{content}</a> : content;
+}
+
+// ─── Contact Modal (Add/Edit) ─────────────────────────────────────────────────
+function ContactModal({ contact, onSave, onClose }) {
+  const [f, setF] = useState({
+    name: contact?.name||'',
+    type: contact?.type||'individual',
+    contactPerson: contact?.contactPerson||'',
+    phone: contact?.phone||'',
+    email: contact?.email||'',
+    city: contact?.city||'',
+    status: contact?.status||'lead',
+    source: contact?.source||'',
+    nextFollowUp: contact?.nextFollowUp||'',
+    notes: contact?.notes||'',
+    tags: contact?.tags?.join(', ')||'',
+  });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  const handleSave = () => {
+    if (!f.name.trim()) return alert('נא להזין שם');
+    onSave({ ...f, tags: f.tags.split(',').map(t=>t.trim()).filter(Boolean) });
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="modal">
+        <div style={{padding:'20px 24px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <h2 style={{fontSize:17,fontWeight:700}}>{contact?'עריכת איש קשר':'איש קשר חדש'}</h2>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#94a3b8',padding:4}}><Icon name="x" size={20}/></button>
+        </div>
+        <div style={{padding:24,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+          <div style={{gridColumn:'1/-1'}}>
+            <label className="label">שם *</label>
+            <input className="input" value={f.name} onChange={e=>set('name',e.target.value)} placeholder="שם מלא / שם ארגון"/>
+          </div>
+          <div>
+            <label className="label">סוג</label>
+            <select className="input" value={f.type} onChange={e=>set('type',e.target.value)}>
+              <option value="individual">יחיד</option>
+              <option value="organization">ארגון</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">סטטוס</label>
+            <select className="input" value={f.status} onChange={e=>set('status',e.target.value)}>
+              {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </div>
+          {f.type==='organization' && (
+            <div style={{gridColumn:'1/-1'}}>
+              <label className="label">איש קשר בארגון</label>
+              <input className="input" value={f.contactPerson} onChange={e=>set('contactPerson',e.target.value)} placeholder="שם איש הקשר"/>
+            </div>
+          )}
+          <div>
+            <label className="label">טלפון</label>
+            <input className="input" type="tel" value={f.phone} onChange={e=>set('phone',e.target.value)} placeholder="05X-XXXXXXX"/>
+          </div>
+          <div>
+            <label className="label">אימייל</label>
+            <input className="input" type="email" value={f.email} onChange={e=>set('email',e.target.value)} placeholder="example@email.com" dir="ltr"/>
+          </div>
+          <div>
+            <label className="label">עיר</label>
+            <input className="input" value={f.city} onChange={e=>set('city',e.target.value)} placeholder="תל אביב"/>
+          </div>
+          <div>
+            <label className="label">מקור</label>
+            <input className="input" value={f.source} onChange={e=>set('source',e.target.value)} placeholder="איך הגיעו? (המלצה, אתר...)"/>
+          </div>
+          <div>
+            <label className="label">מועד מעקב</label>
+            <input className="input" type="date" value={f.nextFollowUp} onChange={e=>set('nextFollowUp',e.target.value)}/>
+          </div>
+          <div>
+            <label className="label">תגיות</label>
+            <input className="input" value={f.tags} onChange={e=>set('tags',e.target.value)} placeholder="VIP, משפחות, תרבות (מופרד בפסיק)"/>
+          </div>
+          <div style={{gridColumn:'1/-1'}}>
+            <label className="label">הערות</label>
+            <textarea className="input" rows={3} value={f.notes} onChange={e=>set('notes',e.target.value)} style={{resize:'vertical'}} placeholder="הערות חופשיות..."/>
+          </div>
+        </div>
+        <div style={{padding:'16px 24px',borderTop:'1px solid #f1f5f9',display:'flex',gap:10,justifyContent:'flex-start'}}>
+          <button className="btn btn-primary" onClick={handleSave}>שמור</button>
+          <button className="btn btn-secondary" onClick={onClose}>ביטול</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Conversation Modal ────────────────────────────────────────────────────────
+function ConversationModal({ onSave, onClose }) {
+  const [f, setF] = useState({ date: today(), type: 'call', content: '' });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  const handleSave = () => {
+    if (!f.content.trim()) return alert('נא להזין תוכן');
+    onSave(f);
+  };
+  return (
+    <div className="modal-overlay" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="modal" style={{maxWidth:440}}>
+        <div style={{padding:'18px 22px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <h2 style={{fontSize:16,fontWeight:700}}>הוסף שיחה / תקשורת</h2>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#94a3b8'}}><Icon name="x" size={18}/></button>
+        </div>
+        <div style={{padding:22,display:'flex',flexDirection:'column',gap:14}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div>
+              <label className="label">תאריך</label>
+              <input type="date" className="input" value={f.date} onChange={e=>set('date',e.target.value)}/>
+            </div>
+            <div>
+              <label className="label">סוג</label>
+              <select className="input" value={f.type} onChange={e=>set('type',e.target.value)}>
+                {Object.entries(CONV_TYPES).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label">תוכן</label>
+            <textarea className="input" rows={4} value={f.content} onChange={e=>set('content',e.target.value)}
+              placeholder="תאר את תוכן השיחה / ההתכתבות..." style={{resize:'vertical'}}/>
+          </div>
+        </div>
+        <div style={{padding:'14px 22px',borderTop:'1px solid #f1f5f9',display:'flex',gap:10}}>
+          <button className="btn btn-primary" onClick={handleSave}>שמור</button>
+          <button className="btn btn-secondary" onClick={onClose}>ביטול</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Show Modal ────────────────────────────────────────────────────────────────
+function ShowModal({ onSave, onClose }) {
+  const [f, setF] = useState({ date:'', venue:'', showType:'מופע רגיל', status:'inquiry', fee:'', notes:'' });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  const handleSave = () => {
+    if (!f.venue.trim()) return alert('נא להזין מקום');
+    onSave(f);
+  };
+  return (
+    <div className="modal-overlay" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="modal" style={{maxWidth:480}}>
+        <div style={{padding:'18px 22px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <h2 style={{fontSize:16,fontWeight:700}}>הוסף מופע / הרצאה</h2>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#94a3b8'}}><Icon name="x" size={18}/></button>
+        </div>
+        <div style={{padding:22,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+          <div style={{gridColumn:'1/-1'}}>
+            <label className="label">מקום *</label>
+            <input className="input" value={f.venue} onChange={e=>set('venue',e.target.value)} placeholder="שם האולם / הארגון"/>
+          </div>
+          <div>
+            <label className="label">תאריך</label>
+            <input type="date" className="input" value={f.date} onChange={e=>set('date',e.target.value)}/>
+          </div>
+          <div>
+            <label className="label">סוג</label>
+            <select className="input" value={f.showType} onChange={e=>set('showType',e.target.value)}>
+              <option>מופע רגיל</option>
+              <option>הרצאה</option>
+              <option>סדנה</option>
+              <option>מופע פרטי</option>
+              <option>פסטיבל</option>
+              <option>אחר</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">סטטוס</label>
+            <select className="input" value={f.status} onChange={e=>set('status',e.target.value)}>
+              {Object.entries(SHOW_STATUS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label">שכר טרחה (₪)</label>
+            <input className="input" type="number" value={f.fee} onChange={e=>set('fee',e.target.value)} placeholder="0"/>
+          </div>
+          <div style={{gridColumn:'1/-1'}}>
+            <label className="label">הערות</label>
+            <textarea className="input" rows={2} value={f.notes} onChange={e=>set('notes',e.target.value)} style={{resize:'vertical'}} placeholder="הערות על המופע..."/>
+          </div>
+        </div>
+        <div style={{padding:'14px 22px',borderTop:'1px solid #f1f5f9',display:'flex',gap:10}}>
+          <button className="btn btn-primary" onClick={handleSave}>שמור</button>
+          <button className="btn btn-secondary" onClick={onClose}>ביטול</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [contacts, setContacts] = useState(load);
+  const [view, setView] = useState('dashboard');
+  const [selectedId, setSelectedId] = useState(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [editModal, setEditModal] = useState(null);
+  const [convModal, setConvModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => { save(contacts); }, [contacts]);
+
+  const selectedContact = contacts.find(c=>c.id===selectedId);
+
+  const addContact = data => {
+    const nc = { id:uid(), conversations:[], showHistory:[], tags:[], createdAt:today(), ...data };
+    setContacts(p=>[nc,...p]);
+    setEditModal(null);
+  };
+  const updateContact = (id, data) => setContacts(p=>p.map(c=>c.id===id?{...c,...data,updatedAt:today()}:c));
+  const deleteContact = id => {
+    if (!confirm('האם למחוק?')) return;
+    setContacts(p=>p.filter(c=>c.id!==id));
+    setView('contacts'); setSelectedId(null);
+  };
+  const addConv = (contactId, conv) => {
+    setContacts(p=>p.map(c=>c.id===contactId?{...c,conversations:[{id:uid(),...conv},...(c.conversations||[])]}:c));
+    setConvModal(false);
+  };
+  const addShow = (contactId, show) => {
+    setContacts(p=>p.map(c=>c.id===contactId?{...c,showHistory:[{id:uid(),...show},...(c.showHistory||[])]}:c));
+    setShowModal(false);
+  };
+  const deleteConv = (contactId, cvId) => setContacts(p=>p.map(c=>c.id===contactId?{...c,conversations:c.conversations.filter(cv=>cv.id!==cvId)}:c));
+  const deleteShow = (contactId, shId) => setContacts(p=>p.map(c=>c.id===contactId?{...c,showHistory:c.showHistory.filter(s=>s.id!==shId)}:c));
+
+  const filtered = contacts.filter(c=>{
+    const q=search.toLowerCase();
+    const ms=!search||c.name?.toLowerCase().includes(q)||(c.contactPerson||'').toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.city||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q);
+    return ms && (statusFilter==='all'||c.status===statusFilter) && (typeFilter==='all'||c.type===typeFilter);
+  });
+
+  const stats = {
+    total: contacts.length,
+    leads: contacts.filter(c=>c.status==='lead').length,
+    warm: contacts.filter(c=>c.status==='warm').length,
+    booked: contacts.filter(c=>c.status==='booked').length,
+    followUps: contacts.filter(c=>c.nextFollowUp&&c.nextFollowUp<=today()).length,
+    vip: contacts.filter(c=>c.status==='vip').length,
+  };
+
+  const upcomingFollowUps = contacts.filter(c=>c.nextFollowUp).sort((a,b)=>a.nextFollowUp.localeCompare(b.nextFollowUp)).slice(0,6);
+  const recentContacts = [...contacts].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,5);
+
+  return (
+    <div style={{display:'flex',minHeight:'100vh'}}>
+      <Sidebar view={view} setView={setView} stats={stats} onNewContact={()=>setEditModal('new')}/>
+      <main className="main-content">
+        {view==='dashboard' && <Dashboard stats={stats} upcomingFollowUps={upcomingFollowUps} recentContacts={recentContacts} onSelectContact={id=>{setSelectedId(id);setView('contact-detail');}} onNewContact={()=>setEditModal('new')}/>}
+        {view==='contacts' && <ContactsList contacts={filtered} allContacts={contacts} search={search} setSearch={setSearch} statusFilter={statusFilter} setStatusFilter={setStatusFilter} typeFilter={typeFilter} setTypeFilter={setTypeFilter} onSelectContact={id=>{setSelectedId(id);setView('contact-detail');}} onNewContact={()=>setEditModal('new')}/>}
+        {view==='contact-detail' && selectedContact && (
+          <ContactDetail
+            contact={selectedContact}
+            onEdit={()=>setEditModal(selectedContact)}
+            onDelete={()=>deleteContact(selectedContact.id)}
+            onAddConversation={()=>setConvModal(true)}
+            onAddShow={()=>setShowModal(true)}
+            onDeleteConversation={cvId=>deleteConv(selectedContact.id,cvId)}
+            onDeleteShow={shId=>deleteShow(selectedContact.id,shId)}
+            onBack={()=>setView('contacts')}
+            onUpdateStatus={status=>updateContact(selectedContact.id,{status})}
+            onUpdateFollowUp={date=>updateContact(selectedContact.id,{nextFollowUp:date})}
+            onUpdateNotes={notes=>updateContact(selectedContact.id,{notes})}
+          />
+        )}
+      </main>
+      {editModal && <ContactModal contact={editModal==='new'?null:editModal} onSave={data=>editModal==='new'?addContact(data):updateContact(editModal.id,data)} onClose={()=>setEditModal(null)}/>}
+      {convModal && selectedContact && <ConversationModal onSave={data=>addConv(selectedContact.id,data)} onClose={()=>setConvModal(false)}/>}
+      {showModal && selectedContact && <ShowModal onSave={data=>addShow(selectedContact.id,data)} onClose={()=>setShowModal(false)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
