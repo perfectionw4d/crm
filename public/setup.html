@@ -243,6 +243,31 @@
       margin-top: 12px;
     }
 
+    /* ─── Password Strength ─── */
+    .pw-rules { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .pw-rule {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; padding: 3px 8px; border-radius: 20px;
+      background: #f3f4f6; color: #9ca3af;
+      transition: all 0.2s;
+    }
+    .pw-rule.ok { background: #dcfce7; color: #15803d; }
+    .pw-rule .ri { font-size: 11px; }
+    .pw-strength-bar { height: 4px; border-radius: 2px; margin-top: 6px; background: #e5e7eb; overflow: hidden; }
+    .pw-strength-fill { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .pw-input-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 16px; padding: 0; line-height: 1;
+    }
+    .pw-toggle:hover { color: #6b7280; }
+    .pw-gen-btn {
+      margin-top: 6px; padding: 6px 14px; background: #ede9fe; color: #6366f1;
+      border: 1px solid #c4b5fd; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.18s;
+    }
+    .pw-gen-btn:hover { background: #ddd6fe; }
+
     /* ─── Spinner ─── */
     .spinner {
       display: inline-block;
@@ -311,11 +336,28 @@
       </div>
       <div class="field">
         <label>סיסמה <span class="req">*</span></label>
-        <input type="password" id="password" placeholder="לפחות 8 תווים" />
+        <div class="pw-input-wrap">
+          <input type="password" id="password" placeholder="לפחות 8 תווים" oninput="checkPwStrength()" />
+          <button type="button" class="pw-toggle" onclick="togglePwVis('password', this)" title="הצג/הסתר">👁</button>
+        </div>
+        <div class="pw-strength-bar">
+          <div class="pw-strength-fill" id="pwFill"></div>
+        </div>
+        <div class="pw-rules" id="pwRules">
+          <span class="pw-rule" id="pr-len"><span class="ri">•</span> 8+ תווים</span>
+          <span class="pw-rule" id="pr-upper"><span class="ri">•</span> אות גדולה</span>
+          <span class="pw-rule" id="pr-lower"><span class="ri">•</span> אות קטנה</span>
+          <span class="pw-rule" id="pr-num"><span class="ri">•</span> ספרה</span>
+          <span class="pw-rule" id="pr-special"><span class="ri">•</span> תו מיוחד</span>
+        </div>
+        <button type="button" class="pw-gen-btn" onclick="generatePassword()">🎲 הפקת סיסמה חזקה</button>
       </div>
       <div class="field">
         <label>אימות סיסמה <span class="req">*</span></label>
-        <input type="password" id="password2" placeholder="הקלידי שוב" />
+        <div class="pw-input-wrap">
+          <input type="password" id="password2" placeholder="הקלידי שוב" />
+          <button type="button" class="pw-toggle" onclick="togglePwVis('password2', this)" title="הצג/הסתר">👁</button>
+        </div>
       </div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="prevStep()">→ חזור</button>
@@ -669,6 +711,10 @@ function validate(n) {
     const p2 = document.getElementById('password2').value;
     if (!em || !/\S+@\S+\.\S+/.test(em)) return 'נא להזין כתובת אימייל תקינה';
     if (!pw || pw.length < 8) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
+    if (!/[A-Z]/.test(pw)) return 'הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית';
+    if (!/[a-z]/.test(pw)) return 'הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית';
+    if (!/[0-9]/.test(pw)) return 'הסיסמה חייבת להכיל לפחות ספרה אחת';
+    if (!/[^A-Za-z0-9]/.test(pw)) return 'הסיסמה חייבת להכיל לפחות תו מיוחד אחד (למשל: !@#$%)';
     if (pw !== p2) return 'הסיסמאות אינן תואמות';
   }
   if (n === 6 && S.useWP) {
@@ -835,8 +881,84 @@ async function finishSetup() {
   }
 }
 
+// ── Password Strength ──────────────────────────────────────
+function checkPwStrength() {
+  const pw = document.getElementById('password').value;
+  const rules = {
+    'pr-len':     pw.length >= 8,
+    'pr-upper':   /[A-Z]/.test(pw),
+    'pr-lower':   /[a-z]/.test(pw),
+    'pr-num':     /[0-9]/.test(pw),
+    'pr-special': /[^A-Za-z0-9]/.test(pw),
+  };
+  let score = 0;
+  for (const [id, ok] of Object.entries(rules)) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('ok', ok);
+      el.querySelector('.ri').textContent = ok ? '✓' : '•';
+    }
+    if (ok) score++;
+  }
+  const fill = document.getElementById('pwFill');
+  if (fill) {
+    const pct = (score / 5) * 100;
+    fill.style.width = pct + '%';
+    fill.style.background = score <= 2 ? '#ef4444' : score <= 3 ? '#f97316' : score === 4 ? '#eab308' : '#22c55e';
+  }
+}
+
+function togglePwVis(inputId, btn) {
+  const el = document.getElementById(inputId);
+  if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }
+  else { el.type = 'password'; btn.textContent = '👁'; }
+}
+
+function generatePassword() {
+  const upper   = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower   = 'abcdefghjkmnpqrstuvwxyz';
+  const nums    = '23456789';
+  const special = '!@#$%&*';
+  const all     = upper + lower + nums + special;
+  // Guarantee at least one of each
+  let pw = [
+    upper[Math.floor(Math.random() * upper.length)],
+    upper[Math.floor(Math.random() * upper.length)],
+    lower[Math.floor(Math.random() * lower.length)],
+    lower[Math.floor(Math.random() * lower.length)],
+    nums[Math.floor(Math.random() * nums.length)],
+    nums[Math.floor(Math.random() * nums.length)],
+    special[Math.floor(Math.random() * special.length)],
+    special[Math.floor(Math.random() * special.length)],
+  ];
+  // Pad to 12 chars
+  while (pw.length < 12) pw.push(all[Math.floor(Math.random() * all.length)]);
+  // Shuffle
+  pw = pw.sort(() => Math.random() - 0.5).join('');
+  const p1 = document.getElementById('password');
+  const p2 = document.getElementById('password2');
+  p1.value = pw;
+  p2.value = pw;
+  // Show as text temporarily so user can see it
+  p1.type = 'text';
+  p2.type = 'text';
+  document.querySelectorAll('.pw-toggle').forEach(b => b.textContent = '🙈');
+  checkPwStrength();
+  // Copy hint
+  try { navigator.clipboard.writeText(pw); } catch(e) {}
+  // Show tooltip
+  const btn = document.querySelector('.pw-gen-btn');
+  const orig = btn.textContent;
+  btn.textContent = '✅ הסיסמה הועתקה!';
+  setTimeout(() => { btn.textContent = orig; }, 2500);
+}
+
 // ── Init ───────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', loadProgress);
+window.addEventListener('DOMContentLoaded', () => {
+  loadProgress();
+  // Generate strong default password if fields are empty
+  if (!document.getElementById('password').value) generatePassword();
+});
 
 // ── Error helpers ──────────────────────────────────────────
 function showErr(n, msg) {
